@@ -55,7 +55,6 @@
 
         <!-- 第三方工具 -->
         <guava.version>30.1-jre</guava.version>
-        <lombok.version>1.18.16</lombok.version>
         <fastjson.version>1.2.75</fastjson.version>
 
     </properties>

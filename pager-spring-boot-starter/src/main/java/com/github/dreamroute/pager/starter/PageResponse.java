@@ -23,11 +23,4 @@ public class PageResponse<T> {
     private long totalNum;
     private List<T> data;
 
-//    public PageResponse(Page<T> page) {
-//        this.pageNum = page.getPageNum();
-//        this.pageSize = page.getPageSize();
-//        this.totalNum = page.getTotal();
-//        this.data = page;
-//    }
-
 }
