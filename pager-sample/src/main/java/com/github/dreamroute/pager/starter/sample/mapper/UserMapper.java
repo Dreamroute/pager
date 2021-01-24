@@ -15,4 +15,6 @@ public interface UserMapper extends Mapper<User, Long> {
 
     @Pager(in = "u.id")
     List<More> selectMore(PageRequest<User> request);
+
+    List<User> findByName(String name);
 }

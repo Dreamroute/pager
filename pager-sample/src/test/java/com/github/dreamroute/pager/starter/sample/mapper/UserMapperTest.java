@@ -15,6 +15,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import javax.sql.DataSource;
 
+import java.util.List;
+
 import static com.alibaba.fastjson.JSON.toJSONString;
 import static com.ninja_squad.dbsetup.Operations.insertInto;
 import static com.ninja_squad.dbsetup.Operations.truncate;
@@ -65,13 +67,20 @@ class UserMapperTest {
 
     @Test
     void selectMoreTest() {
-        PageRequest<User> request = PageRequest.<User>builder()
-                .pageNum(1)
-                .pageSize(2)
-                .param(User.builder().name("w.dehai").build())
-                .build();
+        PageRequest<User> request = new PageRequest<>();
+        request.setPageNum(1);
+        request.setPageSize(2);
+        User user = new User();
+        user.setName("w.dehai");
+        request.setParam(user);
         PageResponse<More> result = Pager.page(request, userMapper::selectMore);
-        System.err.println(toJSONString(result, true));
+        System.err.println(result);
+    }
+
+    @Test
+    void findByNameTest() {
+        List<User> users = userMapper.findByName("w.dehai");
+        System.err.println(users);
     }
 
 }

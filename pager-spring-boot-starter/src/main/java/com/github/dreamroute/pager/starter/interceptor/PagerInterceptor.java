@@ -15,7 +15,6 @@ import org.apache.ibatis.executor.parameter.ParameterHandler;
 import org.apache.ibatis.mapping.BoundSql;
 import org.apache.ibatis.mapping.MappedStatement;
 import org.apache.ibatis.mapping.ParameterMapping;
-import org.apache.ibatis.mapping.SqlCommandType;
 import org.apache.ibatis.plugin.Interceptor;
 import org.apache.ibatis.plugin.Intercepts;
 import org.apache.ibatis.plugin.Invocation;
@@ -38,7 +37,6 @@ import static com.github.dreamroute.pager.starter.anno.PagerContainer.ID;
 import static java.util.Arrays.stream;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.joining;
-import static org.apache.ibatis.mapping.SqlCommandType.SELECT;
 
 /**
  * 分页插件
@@ -61,18 +59,14 @@ public class PagerInterceptor implements Interceptor {
         MappedStatement ms = (MappedStatement) args[0];
         Object param = args[1];
 
-        SqlCommandType sqlCommandType = ms.getSqlCommandType();
-        // 非select不处理
-        if (sqlCommandType != SELECT) {
-            return invocation.proceed();
-        }
-
-        if (!(param instanceof PageRequest)) {
-            return invocation.proceed();
-        }
-
         Configuration config = ms.getConfiguration();
         parsePagerContainer(config);
+
+        PagerContainer pc = pagerContainer.get(ms.getId());
+        // 拦截请求的条件：1. @Page标记接口，2.参数是：PageRequest
+        if (pc == null || !(param instanceof PageRequest)) {
+            return invocation.proceed();
+        }
 
         BoundSql boundSql = ms.getBoundSql(param);
         String sql = boundSql.getSql();
@@ -82,7 +76,7 @@ public class PagerInterceptor implements Interceptor {
         Executor executor = (Executor) (invocation.getTarget());
         Transaction transaction = executor.getTransaction();
         Connection conn = transaction.getConnection();
-        String count = pagerContainer.get(ms.getId()).getCount();
+        String count = pc.getCount();
         PreparedStatement ps = conn.prepareStatement(count);
         BoundSql countBoundSql = new BoundSql(config, count, boundSql.getParameterMappings(), boundSql.getParameterObject());
         ParameterHandler parameterHandler = config.newParameterHandler(ms, boundSql.getParameterObject(), countBoundSql);
@@ -117,7 +111,7 @@ public class PagerInterceptor implements Interceptor {
         pmList.add(limitMapping);
 
         // sql和pm都需要设置在ms里，设置在boundsql里没用，因为使用的是ms里的sql和pm
-        moms.setValue("sqlSource.sqlSource.sql", pagerContainer.get(ms.getId()).getSql());
+        moms.setValue("sqlSource.sqlSource.sql", pc.getSql());
         moms.setValue("sqlSource.sqlSource.parameterMappings", pmList);
 
         if (container.getTotal() != 0) {
