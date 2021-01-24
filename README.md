@@ -33,8 +33,22 @@ public class Addr {
     private String name;
     private Long userId;
 }
+```
+
+### 请求参数对象：
+```java
+@Data
+public class User {
+    @Id
+    private Long id;
+    private String name;
+    private String password;
+    private String phoneNo;
+    private Long version;
+}
 
 ```
+
 ### 编写Mapper接口，并且给接口添加Pager注解：
 ```java
 public interface UserMapper {
