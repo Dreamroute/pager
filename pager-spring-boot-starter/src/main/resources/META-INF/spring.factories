@@ -1,2 +1,2 @@
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-  com.github.dreamroute.pager.starter.PagerInterceptor
+  com.github.dreamroute.pager.starter.interceptor.PagerInterceptor

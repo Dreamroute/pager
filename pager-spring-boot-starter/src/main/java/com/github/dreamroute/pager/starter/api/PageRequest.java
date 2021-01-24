@@ -1,4 +1,4 @@
-package com.github.dreamroute.pager.starter;
+package com.github.dreamroute.pager.starter.api;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

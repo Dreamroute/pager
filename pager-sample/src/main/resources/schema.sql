@@ -1,4 +1,5 @@
 DROP TABLE IF EXISTS `smart_user`;
+DROP TABLE IF EXISTS `smart_addr`;
 DROP TABLE IF EXISTS `backup_table`;
 
 CREATE TABLE `smart_user`
@@ -8,6 +9,14 @@ CREATE TABLE `smart_user`
     `password` varchar(32) DEFAULT '123456',
     `version`  bigint(20)  DEFAULT NULL,
     `phone_no` varchar(20) DEFAULT NULL,
+    PRIMARY KEY (`id`)
+);
+
+CREATE TABLE `smart_addr`
+(
+    `id`       bigint(20) NOT NULL AUTO_INCREMENT,
+    `name`     varchar(32) DEFAULT NULL,
+    `user_id` bigint(20),
     PRIMARY KEY (`id`)
 );
 
