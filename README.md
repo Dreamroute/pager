@@ -1,5 +1,5 @@
 # pager
-MyBatis分页插件，支持单表、多表关联查询
+MyBatis分页插件，支持单表、多表关联查询的分页
 
 ### SpringBoot，引入依赖：
 ```xml
