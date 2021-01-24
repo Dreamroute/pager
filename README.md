@@ -61,7 +61,7 @@ public interface UserMapper {
 }
 ```
 ### @Pager注解说明：
-0. 单表无需设置@Pager的属性
+0. 单表无需设置@Pager的属性，仅仅使用@Pager标记接口即可
 1. 请求被分页拦截的条件：1. @Page标记接口，2.参数是：PageRequest
 2. @Pager的属性，distinctBy（主表id，默认是"id"），用于主表去重
 3. @Pager的属性，in（主表id），多表关联分页查询必须要设置（类似下方sql中的`u.id`）
