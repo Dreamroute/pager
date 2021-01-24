@@ -53,18 +53,18 @@ public interface UserMapper {
 
 ### 编写sql：
 ```
-    <select id="selectMore" resultMap="moreResultMap">
-        select u.*, a.id aid, a.name aname, a.user_id from smart_user u left join smart_addr a on u.id = a.user_id where u.name = #{param.name}
-    </select>
-    <resultMap id="moreResultMap" type="more">
-        <id column="id" property="id" />
-        <result column="name" property="name"/>
-        <collection property="addrs" ofType="addr">
-            <id column="aid" property="id"/>
-            <result column="aname" property="name"/>
-            <result column="user_id" property="userId"/>
-        </collection>
-    </resultMap>
+<select id="selectMore" resultMap="moreResultMap">
+    select u.*, a.id aid, a.name aname, a.user_id from smart_user u left join smart_addr a on u.id = a.user_id where u.name = #{param.name}
+</select>
+<resultMap id="moreResultMap" type="more">
+    <id column="id" property="id" />
+    <result column="name" property="name"/>
+    <collection property="addrs" ofType="addr">
+        <id column="aid" property="id"/>
+        <result column="aname" property="name"/>
+        <result column="user_id" property="userId"/>
+    </collection>
+</resultMap>
 ```
 ### 被分页拦截改写之后的sql：
 ##### 分页sql:
