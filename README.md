@@ -54,18 +54,29 @@ public interface UserMapper {
 
 ### 编写sql：
 ```
-<select id="selectMore" resultMap="moreResultMap">
-    select u.*, a.id aid, a.name aname, a.user_id from smart_user u left join smart_addr a on u.id = a.user_id where u.name = #{param.name}
-</select>
-<resultMap id="moreResultMap" type="more">
-    <id column="id" property="id" />
-    <result column="name" property="name"/>
-    <collection property="addrs" ofType="addr">
-        <id column="aid" property="id"/>
-        <result column="aname" property="name"/>
-        <result column="user_id" property="userId"/>
-    </collection>
-</resultMap>
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.github.dreamroute.pager.starter.sample.mapper.UserMapper">
+    <select id="selectPage" resultType="user">
+        select * from smart_user where name = #{param.name}
+    </select>
+
+    <select id="selectMore" resultMap="moreResultMap">
+        select u.*, a.id aid, a.name aname, a.user_id from smart_user u left join smart_addr a on u.id = a.user_id where u.name = #{param.name}
+    </select>
+    <resultMap id="moreResultMap" type="more">
+        <id column="id" property="id" />
+        <result column="name" property="name"/>
+        <collection property="addrs" ofType="addr">
+            <id column="aid" property="id"/>
+            <result column="aname" property="name"/>
+            <result column="user_id" property="userId"/>
+        </collection>
+    </resultMap>
+
+</mapper>
 ```
 ### 被分页拦截改写之后的sql：
 ##### 分页sql:
