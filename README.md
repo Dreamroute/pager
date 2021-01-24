@@ -92,7 +92,7 @@ public interface UserMapper {
 
 </mapper>
 ```
-### 被分页拦截改写之后的sql：
+### 被分页拦截改写之后的sql（插件内部生成，可用于排错时使用）：
 ##### 分页sql:
 ```
 SELECT
@@ -129,7 +129,7 @@ WHERE
 		) tt 
 	)
 ```
-##### 统计sql：
+##### 统计sql（插件内部生成，可用于排错时使用）：
 ```
 SELECT
 	count( id ) c 
