@@ -48,7 +48,7 @@ public interface UserMapper {
 ```
 ### @Pager注解说明：
 1. 请求被分页拦截的条件：1. @Page标记接口，2.参数是：PageRequest
-2. @Pager的属性，distinctBy（默认是"id"），用于主表去重
+2. @Pager的属性，distinctBy（主表id，默认是"id"），用于主表去重
 3. @Pager的属性，in（主表id），多表关联分页查询必须要设置（类似下方sql中的`u.id`）
 
 ### 编写sql：
@@ -56,6 +56,66 @@ public interface UserMapper {
 <select id="selectMore" resultMap="moreResultMap">
     select u.*, a.id aid, a.name aname, a.user_id from smart_user u left join smart_addr a on u.id = a.user_id where u.name = #{param.name}
 </select>
+```
+### 被分页拦截改写之后的sql：
+##### 分页sql:
+```
+SELECT
+	u.*,
+	a.id aid,
+	a.NAME aname,
+	a.user_id 
+FROM
+	smart_user u
+	LEFT JOIN smart_addr a ON u.id = a.user_id 
+WHERE
+	u.id IN (
+	SELECT
+		* 
+	FROM
+		(
+		SELECT DISTINCT
+			id 
+		FROM
+			(
+			SELECT
+				u.*,
+				a.id aid,
+				a.NAME aname,
+				a.user_id 
+			FROM
+				smart_user u
+				LEFT JOIN smart_addr a ON u.id = a.user_id 
+			WHERE
+				u.NAME = 'w.dehai' 
+			) t 
+			LIMIT 0,
+			2 
+		) tt 
+	)
+```
+##### 统计sql：
+```
+SELECT
+	count( id ) c 
+FROM
+	(
+	SELECT DISTINCT
+		id 
+	FROM
+		(
+		SELECT
+			u.*,
+			a.id aid,
+			a.NAME aname,
+			a.user_id 
+		FROM
+			smart_user u
+			LEFT JOIN smart_addr a ON u.id = a.user_id 
+		WHERE
+			u.NAME = 'w.dehai' 
+		) t 
+	) tt
 ```
 
 ### 查询：
