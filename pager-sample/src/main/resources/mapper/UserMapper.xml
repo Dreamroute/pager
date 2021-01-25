@@ -3,20 +3,38 @@
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.github.dreamroute.pager.starter.sample.mapper.UserMapper">
-    <select id="selectPage" resultType="user">
+    <select id="selectOneTable" resultType="com.github.dreamroute.pager.starter.sample.entity.User">
         select * from smart_user where name = #{param.name}
     </select>
 
-    <select id="selectMore" resultMap="moreResultMap">
+    <select id="selectFromTwoTables" resultMap="twoTablesResultMap">
         select u.*, a.id aid, a.name aname, a.user_id from smart_user u left join smart_addr a on u.id = a.user_id where u.name = #{param.name} and a.user_id = #{param.userId}
     </select>
-    <resultMap id="moreResultMap" type="com.github.dreamroute.pager.starter.sample.dto.SelectMoreResp">
+    <resultMap id="twoTablesResultMap" type="com.github.dreamroute.pager.starter.sample.dto.SelectFromTwoTablesResp">
         <id column="id" property="id" />
         <result column="name" property="name"/>
         <collection property="addrs" ofType="addr">
             <id column="aid" property="id"/>
             <result column="aname" property="name"/>
             <result column="user_id" property="userId"/>
+        </collection>
+    </resultMap>
+
+    <select id="selectFromThreeTables" resultMap="threeTablesResultMap">
+        select u.*, a.id aid, a.name aname, a.user_id, c.id cid, c.name cname, c.addr_id from smart_user u left join smart_addr a on u.id = a.user_id left join smart_city c on a.id = c.addr_id where u.name = #{param.name} and a.user_id = #{param.userId} and c.name = #{param.cityName}
+    </select>
+    <resultMap id="threeTablesResultMap" type="com.github.dreamroute.pager.starter.sample.dto.SelectFromThreeTablesResp">
+        <id column="id" property="id" />
+        <result column="name" property="name"/>
+        <collection property="addrs" ofType="addr">
+            <id column="aid" property="id"/>
+            <result column="aname" property="name"/>
+            <result column="user_id" property="userId"/>
+            <collection property="cities" ofType="city">
+                <id column="cid" property="id"/>
+                <result column="cname" property="name"/>
+                <result column="addr_id" property="addrId"/>
+            </collection>
         </collection>
     </resultMap>
 

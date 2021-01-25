@@ -3,8 +3,10 @@ package com.github.dreamroute.pager.starter.sample.mapper;
 import com.github.dreamroute.pager.starter.api.PageRequest;
 import com.github.dreamroute.pager.starter.api.PageResponse;
 import com.github.dreamroute.pager.starter.api.Pager;
-import com.github.dreamroute.pager.starter.sample.dto.SelectMore;
-import com.github.dreamroute.pager.starter.sample.dto.SelectMoreResp;
+import com.github.dreamroute.pager.starter.sample.dto.SelectFromThreeTables;
+import com.github.dreamroute.pager.starter.sample.dto.SelectFromThreeTablesResp;
+import com.github.dreamroute.pager.starter.sample.dto.SelectFromTwoTables;
+import com.github.dreamroute.pager.starter.sample.dto.SelectFromTwoTablesResp;
 import com.github.dreamroute.pager.starter.sample.entity.User;
 import com.ninja_squad.dbsetup.DbSetup;
 import com.ninja_squad.dbsetup.destination.DataSourceDestination;
@@ -17,6 +19,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import javax.sql.DataSource;
 import java.util.List;
 
+import static com.github.dreamroute.pager.starter.api.Pager.page;
 import static com.ninja_squad.dbsetup.Operations.insertInto;
 import static com.ninja_squad.dbsetup.Operations.truncate;
 
@@ -32,6 +35,7 @@ class UserMapperTest {
     void init() {
         new DbSetup(new DataSourceDestination(dataSource), truncate("smart_user")).launch();
         new DbSetup(new DataSourceDestination(dataSource), truncate("smart_addr")).launch();
+        new DbSetup(new DataSourceDestination(dataSource), truncate("smart_city")).launch();
         Insert initUser = insertInto("smart_user")
                 .columns("id", "name")
                 .values(1L, "w.dehai")
@@ -51,29 +55,54 @@ class UserMapperTest {
                 .values(5L, "Jaedong", 5L)
                 .build();
         new DbSetup(new DataSourceDestination(dataSource), initAddr).launch();
+
+        Insert initCity = insertInto("smart_city")
+                .columns("id", "name", "addr_id")
+                .values(1L, "成都", 1L)
+                .values(2L, "北京", 1L)
+                .build();
+        new DbSetup(new DataSourceDestination(dataSource), initCity).launch();
     }
 
     @Test
-    void selectByPageTest() {
+    void selectOneTableTest() {
         PageRequest<User> request = PageRequest.<User>builder()
                 .pageNum(1)
                 .pageSize(2)
                 .param(User.builder().name("w.dehai").build())
                 .build();
-        PageResponse<User> result = Pager.page(request, userMapper::selectPage);
+        PageResponse<User> result = Pager.page(request, userMapper::selectOneTable);
         System.err.println(result);
     }
 
     @Test
-    void selectMoreTest() {
-        PageRequest<SelectMore> request = new PageRequest<>();
+    void selectFromTwoTablesTest() {
+        PageRequest<SelectFromTwoTables> request = new PageRequest<>();
         request.setPageNum(1);
         request.setPageSize(2);
-        SelectMore sm = new SelectMore();
-        sm.setName("w.dehai");
-        sm.setUserId(1L);
-        request.setParam(sm);
-        PageResponse<SelectMoreResp> result = Pager.page(request, userMapper::selectMore);
+
+        SelectFromTwoTables param = new SelectFromTwoTables();
+        param.setName("w.dehai");
+        param.setUserId(1L);
+        request.setParam(param);
+
+        PageResponse<SelectFromTwoTablesResp> result = Pager.page(request, userMapper::selectFromTwoTables);
+        System.err.println(result);
+    }
+
+    @Test
+    void selectFromThreeTablesTest() {
+        PageRequest<SelectFromThreeTables> request = new PageRequest<>();
+        request.setPageNum(1);
+        request.setPageSize(2);
+
+        SelectFromThreeTables param = new SelectFromThreeTables();
+        param.setName("w.dehai");
+        param.setUserId(1L);
+        param.setCityName("成都");
+        request.setParam(param);
+
+        PageResponse<SelectFromThreeTablesResp> result = page(request, userMapper::selectFromThreeTables);
         System.err.println(result);
     }
 

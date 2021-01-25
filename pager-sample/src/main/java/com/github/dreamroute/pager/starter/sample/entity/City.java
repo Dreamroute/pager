@@ -4,14 +4,11 @@ import com.github.dreamroute.mybatis.pro.core.annotations.Id;
 import com.github.dreamroute.mybatis.pro.core.annotations.Table;
 import lombok.Data;
 
-import java.util.List;
-
 @Data
-@Table("smart_addr")
-public class Addr {
+@Table("smart_city")
+public class City {
     @Id
     private Long id;
     private String name;
-    private Long userId;
-    private List<City> cities;
+    private Long addrId;
 }

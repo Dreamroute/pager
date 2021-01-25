@@ -3,7 +3,8 @@ package com.github.dreamroute.pager.starter.sample.dto;
 import lombok.Data;
 
 @Data
-public class SelectMore {
+public class SelectFromThreeTables {
     private String name;
     private Long userId;
+    private String cityName;
 }

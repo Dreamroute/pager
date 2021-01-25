@@ -1,5 +1,6 @@
 DROP TABLE IF EXISTS `smart_user`;
 DROP TABLE IF EXISTS `smart_addr`;
+DROP TABLE IF EXISTS `smart_city`;
 DROP TABLE IF EXISTS `backup_table`;
 
 CREATE TABLE `smart_user`
@@ -17,6 +18,14 @@ CREATE TABLE `smart_addr`
     `id`       bigint(20) NOT NULL AUTO_INCREMENT,
     `name`     varchar(32) DEFAULT NULL,
     `user_id` bigint(20),
+    PRIMARY KEY (`id`)
+);
+
+CREATE TABLE `smart_city`
+(
+    `id`       bigint(20) NOT NULL AUTO_INCREMENT,
+    `name`     varchar(32) DEFAULT NULL,
+    `addr_id` bigint(20),
     PRIMARY KEY (`id`)
 );
 

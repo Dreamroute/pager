@@ -52,6 +52,7 @@ public class PagerInterceptor implements Interceptor {
      * 单表
      */
     private static final int SINGLE = 1;
+    private static final String COUNT_NAME = "_count_";
 
     @Override
     public Object intercept(Invocation invocation) throws Throwable {
@@ -84,7 +85,7 @@ public class PagerInterceptor implements Interceptor {
         ResultSet rs = ps.executeQuery();
         PageContainer<Object> container = new PageContainer<>();
         while (rs.next()) {
-            long totle = rs.getLong("c");
+            long totle = rs.getLong(COUNT_NAME);
             container.setTotal(totle);
         }
         ps.close();
@@ -100,7 +101,7 @@ public class PagerInterceptor implements Interceptor {
         int start = (pageNum - 1) * pageSize;
         pr.setPageNum(start);
 
-        List<ParameterMapping> pmList = wrapParameterMapping(config, boundSql);
+        List<ParameterMapping> pmList = wrapParameterMapping(config, boundSql, pagerContainer.get(ms.getId()).isSingleTable());
         MetaObject moms = config.newMetaObject(ms);
         // sql和pm都需要设置在ms里，设置在boundsql里没用，因为使用的是ms里的sql和pm
         moms.setValue("sqlSource.sqlSource.sql", pc.getSql());
@@ -118,13 +119,15 @@ public class PagerInterceptor implements Interceptor {
     /**
      * 构建ParameterMapping
      */
-    private List<ParameterMapping> wrapParameterMapping(Configuration config, BoundSql boundSql) {
+    private List<ParameterMapping> wrapParameterMapping(Configuration config, BoundSql boundSql, boolean singleTable) {
         List<ParameterMapping> parameterMappings = boundSql.getParameterMappings();
-        // 由于插件改写sql会在sql的末尾增加一次查询条件，所以这里需要在sql末尾再次增加一次查询条件
         List<ParameterMapping> pmList = new ArrayList<>(ofNullable(parameterMappings).orElseGet(ArrayList::new));
         pmList.add(new ParameterMapping.Builder(config, "pageNum", int.class).build());
         pmList.add(new ParameterMapping.Builder(config, "pageSize", int.class).build());
-        pmList.addAll(ofNullable(parameterMappings).orElseGet(ArrayList::new));
+        // 多表情况下：由于插件改写sql会在sql的末尾增加一次查询条件，所以这里需要在sql末尾再次增加一次查询条件
+        if (!singleTable) {
+            pmList.addAll(ofNullable(parameterMappings).orElseGet(ArrayList::new));
+        }
         return pmList;
     }
 
@@ -153,9 +156,10 @@ public class PagerInterceptor implements Interceptor {
             List<String> tableList = new TablesNamesFinder().getTableList(select);
 
             if (tableList != null && tableList.size() == SINGLE) {
-                container.setCount("SELECT COUNT (*) c FROM (" + sql + ") t");
+                container.setCount("SELECT COUNT (*) " + COUNT_NAME + " FROM (" + sql + ") t");
                 sql += " LIMIT ?, ?";
                 container.setSql(sql);
+                container.setSingleTable(true);
             } else {
                 PlainSelect body = (PlainSelect) select.getSelectBody();
                 String columns = body.getSelectItems().stream().map(Object::toString).collect(joining(","));
@@ -171,11 +175,11 @@ public class PagerInterceptor implements Interceptor {
                 String result = noCondition + " WHERE " +  distinctBy + " IN  (SELECT * FROM (SELECT DISTINCT " +  distinctBy + " from  (" + sql + ") " + alias + " LIMIT ?, ?) " + alias + ")";
                 String where = body.getWhere().toString();
                 if (StringUtils.isNoneBlank(where)) {
-                    result = result + " AND " + where.toString();
+                    result = result + " AND " + where;
                 }
                 container.setSql(result);
 
-                String count = "SELECT count(" + distinctBy + ") c FROM (SELECT DISTINCT " +  distinctBy + " from (" + sql + ") " + alias + ") " + alias;
+                String count = "SELECT count(" + distinctBy + ") " + COUNT_NAME + " FROM (SELECT DISTINCT " +  distinctBy + " from (" + sql + ") " + alias + ") " + alias;
                 container.setCount(count);
             }
         } catch (Exception e) {

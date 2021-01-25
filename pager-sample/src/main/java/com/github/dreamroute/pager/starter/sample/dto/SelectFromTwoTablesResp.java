@@ -6,7 +6,7 @@ import lombok.Data;
 import java.util.List;
 
 @Data
-public class SelectMoreResp {
+public class SelectFromTwoTablesResp {
     private Long id;
     private String name;
     private String password;

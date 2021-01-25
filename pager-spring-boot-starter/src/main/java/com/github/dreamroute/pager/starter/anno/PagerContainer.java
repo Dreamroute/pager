@@ -13,4 +13,5 @@ public class PagerContainer {
     private String distinctBy;
     private String count;
     private String sql;
+    private boolean singleTable;
 }
