@@ -10,8 +10,7 @@ public class PagerContainer {
 
     public static final String ID ="id";
 
-    private String distinctColumn;
-    private String in;
+    private String distinctBy;
     private String count;
     private String sql;
 }

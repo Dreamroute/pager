@@ -19,9 +19,4 @@ public @interface Pager {
      * 主表主键id，用于去重
      */
     String distinctBy() default "id";
-
-    /**
-     * 主表id查询列
-     */
-    String in() default "id";
 }

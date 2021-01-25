@@ -11,4 +11,8 @@ public class PaggerException extends RuntimeException {
     public PaggerException(String message) {
         super(message);
     }
+
+    public PaggerException(String message, Throwable cause) {
+        super(message, cause);
+    }
 }

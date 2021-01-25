@@ -133,10 +133,7 @@ public class PagerInterceptor implements Interceptor {
                     stream(mapper.getDeclaredMethods()).filter(method -> AnnotationUtil.hasAnnotation(method, Pager.class)).forEach(method -> {
                         String dictinctBy = AnnotationUtil.getAnnotationValue(method, Pager.class, "distinctBy");
                         PagerContainer container = new PagerContainer();
-                        container.setDistinctColumn(StringUtils.isEmpty(dictinctBy) ? ID : dictinctBy);
-                        String in = AnnotationUtil.getAnnotationValue(method, Pager.class, "in");
-                        in = ofNullable(in).orElseThrow(() -> new PaggerException("多表分页查询必须要设置@Pager的属性in"));
-                        container.setIn(in);
+                        container.setDistinctBy(StringUtils.isEmpty(dictinctBy) ? ID : dictinctBy);
                         pagerContainer.put(mapperName + "." + method.getName(), container);
                     });
                 }
@@ -161,14 +158,20 @@ public class PagerInterceptor implements Interceptor {
                 String joins = body.getJoins().stream().map(Object::toString).collect(joining(","));
                 String noCondition = "SELECT " + columns + " FROM " + from + " " + joins + " ";
 
-                String result = noCondition + " WHERE " +  container.getIn() + " IN  (SELECT * FROM (SELECT DISTINCT " +  container.getDistinctColumn() + " from  (" + sql + ") t LIMIT ?, ?) tt)";
+                String distinctBy = container.getDistinctBy();
+                String alias = "";
+                if (distinctBy.indexOf('.') != -1) {
+                    alias = distinctBy.split("\\.")[0];
+                }
+                String result = noCondition + " WHERE " +  distinctBy + " IN  (SELECT * FROM (SELECT DISTINCT " +  distinctBy + " from  (" + sql + ") " + alias + " LIMIT ?, ?) " + alias + ")";
                 container.setSql(result);
 
-                String count = "SELECT count(" + container.getDistinctColumn() + ") c FROM (SELECT DISTINCT " +  container.getDistinctColumn() + " from (" + sql + ") t) tt";
+                String count = "SELECT count(" + distinctBy + ") c FROM (SELECT DISTINCT " +  distinctBy + " from (" + sql + ") " + alias + ") " + alias;
                 container.setCount(count);
             }
         } catch (Exception e) {
-            throw new PaggerException("SQL语句异常，你的sql语句是: [" + sql + "]");
+            throw new PaggerException("SQL语句异常，你的sql语句是: [" + sql + "]", e);
         }
     }
+
 }

@@ -13,7 +13,7 @@ public interface UserMapper extends Mapper<User, Long> {
     @Pager
     List<User> selectPage(PageRequest<User> request);
 
-    @Pager(in = "u.id")
+    @Pager(distinctBy = "u.id")
     List<More> selectMore(PageRequest<User> request);
 
     List<User> findByName(String name);
