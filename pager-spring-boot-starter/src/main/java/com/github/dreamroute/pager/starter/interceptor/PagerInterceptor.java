@@ -100,16 +100,8 @@ public class PagerInterceptor implements Interceptor {
         int start = (pageNum - 1) * pageSize;
         pr.setPageNum(start);
 
+        List<ParameterMapping> pmList = wrapParameterMapping(config, boundSql);
         MetaObject moms = config.newMetaObject(ms);
-
-        ParameterMapping startMapping = new ParameterMapping.Builder(config, "pageNum", int.class).build();
-        ParameterMapping limitMapping = new ParameterMapping.Builder(config, "pageSize", int.class).build();
-
-        List<ParameterMapping> parameterMappings = boundSql.getParameterMappings();
-        List<ParameterMapping> pmList = new ArrayList<>(ofNullable(parameterMappings).orElseGet(ArrayList::new));
-        pmList.add(startMapping);
-        pmList.add(limitMapping);
-
         // sql和pm都需要设置在ms里，设置在boundsql里没用，因为使用的是ms里的sql和pm
         moms.setValue("sqlSource.sqlSource.sql", pc.getSql());
         moms.setValue("sqlSource.sqlSource.parameterMappings", pmList);
@@ -121,6 +113,19 @@ public class PagerInterceptor implements Interceptor {
         }
 
         return container;
+    }
+
+    /**
+     * 构建ParameterMapping
+     */
+    private List<ParameterMapping> wrapParameterMapping(Configuration config, BoundSql boundSql) {
+        List<ParameterMapping> parameterMappings = boundSql.getParameterMappings();
+        // 由于插件改写sql会在sql的末尾增加一次查询条件，所以这里需要在sql末尾再次增加一次查询条件
+        List<ParameterMapping> pmList = new ArrayList<>(ofNullable(parameterMappings).orElseGet(ArrayList::new));
+        pmList.add(new ParameterMapping.Builder(config, "pageNum", int.class).build());
+        pmList.add(new ParameterMapping.Builder(config, "pageSize", int.class).build());
+        pmList.addAll(ofNullable(parameterMappings).orElseGet(ArrayList::new));
+        return pmList;
     }
 
     private void parsePagerContainer(Configuration config) {
@@ -164,6 +169,10 @@ public class PagerInterceptor implements Interceptor {
                     alias = distinctBy.split("\\.")[0];
                 }
                 String result = noCondition + " WHERE " +  distinctBy + " IN  (SELECT * FROM (SELECT DISTINCT " +  distinctBy + " from  (" + sql + ") " + alias + " LIMIT ?, ?) " + alias + ")";
+                String where = body.getWhere().toString();
+                if (StringUtils.isNoneBlank(where)) {
+                    result = result + " AND " + where.toString();
+                }
                 container.setSql(result);
 
                 String count = "SELECT count(" + distinctBy + ") c FROM (SELECT DISTINCT " +  distinctBy + " from (" + sql + ") " + alias + ") " + alias;

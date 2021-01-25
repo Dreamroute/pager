@@ -1,11 +1,12 @@
-package com.github.dreamroute.pager.starter.sample.entity;
+package com.github.dreamroute.pager.starter.sample.dto;
 
+import com.github.dreamroute.pager.starter.sample.entity.Addr;
 import lombok.Data;
 
 import java.util.List;
 
 @Data
-public class More {
+public class SelectMoreResp {
     private Long id;
     private String name;
     private String password;

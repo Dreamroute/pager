@@ -3,7 +3,8 @@ package com.github.dreamroute.pager.starter.sample.mapper;
 import com.github.dreamroute.pager.starter.api.PageRequest;
 import com.github.dreamroute.pager.starter.api.PageResponse;
 import com.github.dreamroute.pager.starter.api.Pager;
-import com.github.dreamroute.pager.starter.sample.entity.More;
+import com.github.dreamroute.pager.starter.sample.dto.SelectMore;
+import com.github.dreamroute.pager.starter.sample.dto.SelectMoreResp;
 import com.github.dreamroute.pager.starter.sample.entity.User;
 import com.ninja_squad.dbsetup.DbSetup;
 import com.ninja_squad.dbsetup.destination.DataSourceDestination;
@@ -14,10 +15,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import javax.sql.DataSource;
-
 import java.util.List;
 
-import static com.alibaba.fastjson.JSON.toJSONString;
 import static com.ninja_squad.dbsetup.Operations.insertInto;
 import static com.ninja_squad.dbsetup.Operations.truncate;
 
@@ -67,13 +66,14 @@ class UserMapperTest {
 
     @Test
     void selectMoreTest() {
-        PageRequest<User> request = new PageRequest<>();
+        PageRequest<SelectMore> request = new PageRequest<>();
         request.setPageNum(1);
         request.setPageSize(2);
-        User user = new User();
-        user.setName("w.dehai");
-        request.setParam(user);
-        PageResponse<More> result = Pager.page(request, userMapper::selectMore);
+        SelectMore sm = new SelectMore();
+        sm.setName("w.dehai");
+        sm.setUserId(1L);
+        request.setParam(sm);
+        PageResponse<SelectMoreResp> result = Pager.page(request, userMapper::selectMore);
         System.err.println(result);
     }
 
