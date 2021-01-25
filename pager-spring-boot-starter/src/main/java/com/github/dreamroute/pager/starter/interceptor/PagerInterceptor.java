@@ -160,7 +160,7 @@ public class PagerInterceptor implements Interceptor {
                 PlainSelect body = (PlainSelect) select.getSelectBody();
                 String columns = body.getSelectItems().stream().map(Object::toString).collect(joining(","));
                 String from = body.getFromItem().toString();
-                String joins = body.getJoins().stream().map(Object::toString).collect(joining(","));
+                String joins = body.getJoins().stream().map(Object::toString).collect(joining(" "));
                 String noCondition = "SELECT " + columns + " FROM " + from + " " + joins + " ";
 
                 String distinctBy = container.getDistinctBy();
