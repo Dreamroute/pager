@@ -1,7 +1,13 @@
 # pager
 MyBatis分页插件，支持单表、多表关联查询的分页
 
-### SpringBoot，引入依赖：
+### 分页原理
+1. 对于如下SQL：`select * from smart_user where name = #{param.name}`
+2. 插件拦截该SQL，插入分页信息：`select * from smart_user where name = 'w.dehai' LIMIT 0, 2`
+3. 插件生成统计SQL： `SELECT COUNT (*) _count_ FROM (select * from smart_user where name = 'w.dehai') t`
+4. 将分页信息返回给调用方
+
+### SpringBoot引入依赖：
 ```xml
 <dependency>
     <groupId>com.github.dreamroute</groupId>
@@ -9,10 +15,47 @@ MyBatis分页插件，支持单表、多表关联查询的分页
     <version>latest version</version>
 </dependency>
 ```
-# 举例：
-> 由于单表较简单，这里举多表关联查询分页
+# 举例（单表分页）：
+#### 请求参数对象：
+```
+@Data
+public class User {
+    private String name;
+}
 
-### 编写实体`More`和`Addr`，关系为1对多
+```
+#### UserMapper接口
+```
+public interface UserMapper {
+
+    @Pager
+    List<User> selectOneTable(PageRequest<User> request);
+
+}
+```
+#### SQL语句
+```
+<select id="selectOneTable" resultType="com.github.dreamroute.pager.starter.sample.entity.User">
+    select * from smart_user where name = #{param.name}
+</select>
+```
+#### 请求
+```
+@Test
+void selectOneTableTest() {
+    PageRequest<User> request = PageRequest.<User>builder()
+            .pageNum(1)
+            .pageSize(2)
+            .param(User.builder().name("w.dehai").build())
+            .build();
+    PageResponse<User> result = Pager.page(request, userMapper::selectOneTable);
+    System.err.println(result);
+}
+```
+
+# 举例（单表分页）：
+
+#### 请求参数对象：
 ```java
 @Data
 public class More {

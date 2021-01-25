@@ -40,7 +40,7 @@
     <properties>
 
         <!-- 版本信息 -->
-        <revision>1.0-RELEASE</revision>
+        <revision>1.1-RELEASE</revision>
 
         <repository.url>github.com</repository.url>
         <repository.name>Dreamroute</repository.name>
