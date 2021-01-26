@@ -166,6 +166,8 @@ public class PagerInterceptor implements Interceptor {
                 String from = body.getFromItem().toString();
                 String joins = body.getJoins().stream().map(Object::toString).collect(joining(" "));
                 String where = body.getWhere().toString();
+                String orderBy = ofNullable(body.getOrderByElements()).orElseGet(ArrayList::new).stream().map(Object::toString).collect(joining(", "));
+                orderBy = StringUtils.isNotBlank(orderBy) ? (" ORDER BY " + orderBy) : "";
 
                 String alias = "";
                 String distinctBy = container.getDistinctBy();
@@ -177,10 +179,11 @@ public class PagerInterceptor implements Interceptor {
                 String subQuery = "SELECT DISTINCT " + distinctBy + afterFrom;
                 String noCondition = "SELECT " + columns + " FROM " + from + " " + joins + " ";
 
-                String result = noCondition + " WHERE " + distinctBy + " IN  (SELECT * FROM (" + subQuery + " LIMIT ?, ?) " + alias + ")";
+                String result = noCondition + " WHERE " + distinctBy + " IN  (SELECT * FROM (" + subQuery + orderBy + " LIMIT ?, ?) " + alias + ")";
                 if (StringUtils.isNoneBlank(where)) {
                     result = result + " AND " + where;
                 }
+                result += orderBy;
                 container.setSql(result);
 
                 String count = "SELECT count(DISTINCT " + distinctBy + ") " + COUNT_NAME + afterFrom;

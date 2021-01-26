@@ -4,11 +4,11 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.github.dreamroute.pager.starter.sample.mapper.UserMapper">
     <select id="selectOneTable" resultType="com.github.dreamroute.pager.starter.sample.entity.User">
-        select * from smart_user where name = #{param.name}
+        select * from smart_user where name = #{param.name} order by id asc, name desc
     </select>
 
     <select id="selectFromTwoTables" resultMap="twoTablesResultMap">
-        select u.*, a.id aid, a.name aname, a.user_id from smart_user u left join smart_addr a on u.id = a.user_id where u.name = #{param.name} and a.user_id = #{param.userId}
+        select u.*, a.id aid, a.name aname, a.user_id from smart_user u left join smart_addr a on u.id = a.user_id where u.name = #{param.name} and a.user_id = #{param.userId} order by u.id desc, u.name asc
     </select>
     <resultMap id="twoTablesResultMap" type="com.github.dreamroute.pager.starter.sample.dto.SelectFromTwoTablesResp">
         <id column="id" property="id" />
@@ -21,7 +21,7 @@
     </resultMap>
 
     <select id="selectFromThreeTables" resultMap="threeTablesResultMap">
-        select u.*, a.id aid, a.name aname, a.user_id, c.id cid, c.name cname, c.addr_id from smart_user u left join smart_addr a on u.id = a.user_id left join smart_city c on a.id = c.addr_id where u.name = #{param.name} and a.user_id = #{param.userId} and c.name = #{param.cityName}
+        select u.*, a.id aid, a.name aname, a.user_id, c.id cid, c.name cname, c.addr_id from smart_user u left join smart_addr a on u.id = a.user_id left join smart_city c on a.id = c.addr_id where u.name = #{param.name} and a.user_id = #{param.userId} and c.name = #{param.cityName} order by u.id desc, u.name asc
     </select>
     <resultMap id="threeTablesResultMap" type="com.github.dreamroute.pager.starter.sample.dto.SelectFromThreeTablesResp">
         <id column="id" property="id" />
