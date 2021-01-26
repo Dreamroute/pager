@@ -52,7 +52,7 @@ public class PagerInterceptor implements Interceptor {
      * 单表
      */
     private static final int SINGLE = 1;
-    private static final String COUNT_NAME = "_count_";
+    private static final String COUNT_NAME = "__count__";
 
     @Override
     public Object intercept(Invocation invocation) throws Throwable {
@@ -165,21 +165,25 @@ public class PagerInterceptor implements Interceptor {
                 String columns = body.getSelectItems().stream().map(Object::toString).collect(joining(","));
                 String from = body.getFromItem().toString();
                 String joins = body.getJoins().stream().map(Object::toString).collect(joining(" "));
-                String noCondition = "SELECT " + columns + " FROM " + from + " " + joins + " ";
+                String where = body.getWhere().toString();
 
-                String distinctBy = container.getDistinctBy();
                 String alias = "";
+                String distinctBy = container.getDistinctBy();
                 if (distinctBy.indexOf('.') != -1) {
                     alias = distinctBy.split("\\.")[0];
                 }
-                String result = noCondition + " WHERE " +  distinctBy + " IN  (SELECT * FROM (SELECT DISTINCT " +  distinctBy + " from  (" + sql + ") " + alias + " LIMIT ?, ?) " + alias + ")";
-                String where = body.getWhere().toString();
+
+                String afterFrom = " FROM " + from + " " + joins + " WHERE " + where;
+                String subQuery = "SELECT DISTINCT " + distinctBy + afterFrom;
+                String noCondition = "SELECT " + columns + " FROM " + from + " " + joins + " ";
+
+                String result = noCondition + " WHERE " + distinctBy + " IN  (SELECT * FROM (" + subQuery + " LIMIT ?, ?) " + alias + ")";
                 if (StringUtils.isNoneBlank(where)) {
                     result = result + " AND " + where;
                 }
                 container.setSql(result);
 
-                String count = "SELECT count(" + distinctBy + ") " + COUNT_NAME + " FROM (SELECT DISTINCT " +  distinctBy + " from (" + sql + ") " + alias + ") " + alias;
+                String count = "SELECT count(DISTINCT " + distinctBy + ") " + COUNT_NAME + afterFrom;
                 container.setCount(count);
             }
         } catch (Exception e) {
