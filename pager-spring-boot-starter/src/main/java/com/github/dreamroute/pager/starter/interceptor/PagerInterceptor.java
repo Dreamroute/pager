@@ -156,6 +156,7 @@ public class PagerInterceptor implements Interceptor {
             List<String> tableList = new TablesNamesFinder().getTableList(select);
 
             if (tableList != null && tableList.size() == SINGLE) {
+                // TODO 单表需要取消掉统计排序
                 container.setCount("SELECT COUNT (*) " + COUNT_NAME + " FROM (" + sql + ") t");
                 sql += " LIMIT ?, ?";
                 container.setSql(sql);
