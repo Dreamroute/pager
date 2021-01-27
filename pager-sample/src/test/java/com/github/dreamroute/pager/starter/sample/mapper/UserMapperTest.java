@@ -66,11 +66,14 @@ class UserMapperTest {
 
     @Test
     void selectOneTableTest() {
-        PageRequest<User> request = PageRequest.<User>builder()
-                .pageNum(1)
-                .pageSize(2)
-                .param(User.builder().name("w.dehai").build())
-                .build();
+        PageRequest<User> request = new PageRequest<>();
+        request.setPageNum(1);
+        request.setPageSize(2);
+
+        User user = new User();
+        user.setName("w.dehai");
+        request.setParam(user);
+
         PageResponse<User> result = Pager.page(request, userMapper::selectOneTable);
         System.err.println(result);
     }

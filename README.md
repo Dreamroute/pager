@@ -140,7 +140,7 @@ CREATE TABLE `smart_city`
 );
 ```
 
-#（单表分页）：
+# 单表分页
 #### 请求参数对象：
 ```
 @Data
@@ -168,17 +168,20 @@ public interface UserMapper {
 ```
 @Test
 void selectOneTableTest() {
-    PageRequest<User> request = PageRequest.<User>builder()
-            .pageNum(1)
-            .pageSize(2)
-            .param(User.builder().name("w.dehai").build())
-            .build();
+    PageRequest<User> request = new PageRequest<>();
+    request.setPageNum(1);
+    request.setPageSize(2);
+
+    User user = new User();
+    user.setName("w.dehai");
+    request.setParam(user);
+
     PageResponse<User> result = Pager.page(request, userMapper::selectOneTable);
     System.err.println(result);
 }
 ```
 
-# 举例（多表分页）：
+# 多表分页
 
 #### 请求参数对象：
 ```java
@@ -225,9 +228,9 @@ public interface UserMapper {
 }
 ```
 ### @Pager注解说明：
-0. 单表无需设置@Pager的属性，仅仅使用@Pager标记接口即可
-1. 请求被分页拦截的条件：1. @Page标记接口，2.参数是：PageRequest
-2. @Pager的属性，distinctBy（主表id列，默认是"id"），用于主表去重
+* 需要分页的查询接口需要被@Pager标记，同时，多表还需要设置distinctBy属性，单表不需要
+* 请求被分页拦截的条件：1. @Page标记接口，2.参数是：PageRequest
+* @Pager的属性，distinctBy（主表id列，默认是"id"），用于主表去重
 
 ### SQL语句：
 ```
@@ -308,5 +311,4 @@ public class PageResponse<T> {
     private List<T> data;
 
 }
-
 ```
