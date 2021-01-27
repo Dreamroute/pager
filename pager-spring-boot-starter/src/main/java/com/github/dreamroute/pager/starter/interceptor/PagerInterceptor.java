@@ -36,7 +36,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 
 import static com.github.dreamroute.pager.starter.anno.PagerContainer.ID;
 import static java.util.Arrays.stream;
@@ -58,7 +57,9 @@ public class PagerInterceptor implements Interceptor {
      * 单表
      */
     private static final int SINGLE = 1;
-    private static final String COUNT_NAME = "__count__";
+    private static final String COUNT_NAME = "_$_count_$_";
+    private static final String WHERE = " WHERE ";
+    private static final String FROM = " FROM ";
 
     @Override
     public Object intercept(Invocation invocation) throws Throwable {
@@ -164,13 +165,14 @@ public class PagerInterceptor implements Interceptor {
             PlainSelect body = (PlainSelect) select.getSelectBody();
             String columns = body.getSelectItems().stream().map(Object::toString).collect(joining(","));
             String from = body.getFromItem().toString();
-            String where = ofNullable(body.getWhere()).map(whe -> " WHERE " + whe).orElse("");
+            String where = ofNullable(body.getWhere()).map(Object::toString).orElse("");
 
             if (tableList != null && tableList.size() == SINGLE) {
-                sql = "SELECT " + columns + " FROM " + from + where;
+                where = StringUtils.isNotBlank(where) ? (WHERE + where) : "";
+                sql = "SELECT " + columns + FROM + from + where;
                 container.setCount("SELECT COUNT (*) " + COUNT_NAME + " FROM (" + sql + ") t");
                 String orderBy = ofNullable(body.getOrderByElements()).orElseGet(ArrayList::new).stream().map(Objects::toString).collect(joining(", "));
-                orderBy = StringUtils.isNoneBlank(orderBy) ?  (" ORDER BY " + orderBy) : "";
+                orderBy = StringUtils.isNoneBlank(orderBy) ? (" ORDER BY " + orderBy) : "";
 
                 sql = sql + orderBy + " LIMIT ?, ?";
                 container.setSql(sql);
@@ -194,15 +196,15 @@ public class PagerInterceptor implements Interceptor {
                     // order by列和主表id列重复，需要去重
                     Set<String> orderbyListStr = orderbyList.stream().map(OrderByElement::getExpression).map(Objects::toString).collect(toSet());
                     orderbyListStr.add(distinctBy);
-                    subQueryColumns = orderbyListStr.stream().collect(joining(", "));
+                    subQueryColumns = String.join(", ", orderbyListStr);
                 }
 
 
-                String afterFrom = " FROM " + from + " " + joins + " WHERE " + where;
+                String afterFrom = FROM + from + " " + joins + WHERE + where;
                 String subQuery = "SELECT DISTINCT " + subQueryColumns + afterFrom;
-                String noCondition = "SELECT " + columns + " FROM " + from + " " + joins + " ";
+                String noCondition = "SELECT " + columns + FROM + from + " " + joins + " ";
 
-                String result = noCondition + " WHERE " + distinctBy + " IN  (SELECT " + distinctBy + " FROM (" + subQuery + orderBy + " LIMIT ?, ?) " + alias + ")";
+                String result = noCondition + WHERE + distinctBy + " IN  (SELECT " + distinctBy + " FROM (" + subQuery + orderBy + " LIMIT ?, ?) " + alias + ")";
                 if (StringUtils.isNoneBlank(where)) {
                     result = result + " AND " + where;
                 }
