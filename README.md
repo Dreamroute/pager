@@ -11,7 +11,7 @@ MyBatis分页插件，支持单表、多表关联查询的分页
 </dependency>
 ```
 ###### 2、在Mapper接口方法上添加@Pager注解，并将接口的参数改为类型为PageRequest
-###### 3、调用方法，例如: `PageResponse<User> result = Pager.page(request, userMapper::userMapper方法);`
+###### 3、调用方法，例如: `PageResponse<User> result = Pager.page(request, userMapper::接口方法);`
 ###### 5、完成接入
 
 ### 分页原理
