@@ -12,19 +12,102 @@ MyBatis分页插件，支持单表、多表关联查询的分页
 ```
 ###### 2、在Mapper接口方法上添加@Pager注解，并将接口的参数改为类型为PageRequest
 ###### 3、调用方法，例如: `PageResponse<User> result = Pager.page(request, userMapper::接口方法);`
-###### 5、完成接入
+###### 5、完成接入，你无需编写统计SQL语句，也无需关心多表联查数据分页不准确的问题，统统插件帮你完成
 
 ### 分页原理
 #### 单表
-> 1. 对于如下SQL：`select * from smart_user where name = #{param.name}`
-> 2. 插件拦截该SQL，自动插入分页信息：`select * from smart_user where name = ? LIMIT ?, ?`
-> 3. 插件自动生成统计SQL： `SELECT COUNT (*) _count_ FROM (select * from smart_user where name = 'w.dehai') t`
-> 4. 将分页信息返回给调用方
+* 原始SQL：
+```
+SELECT
+	* 
+FROM
+	smart_user 
+WHERE
+	NAME = #{param.name}
+```
+* 被插件拦截，自动插入分页信息之后的SQL：
+```
+SELECT
+	* 
+FROM
+	smart_user 
+WHERE
+	NAME = ? 
+LIMIT ?, ?
+```
+* 被插件拦截，自动生成统计SQL：
+```
+SELECT
+	COUNT( * ) _count_ 
+FROM
+	( SELECT * FROM smart_user WHERE NAME = 'w.dehai' ) t
+```
+
 #### 多表
-> 1. 对于如下SQL：`select u.*, a.id aid, a.name aname, a.user_id from smart_user u left join smart_addr a on u.id = a.user_id where u.name = #{param.name} and a.user_id = #{param.userId} order by u.id desc, u.name asc`
-> 2. 插件拦截该SQL，自动插入分页信息：`SELECT u.*,a.id aid,a.name aname,a.user_id FROM smart_user u LEFT JOIN smart_addr a ON u.id = a.user_id  WHERE u.id IN  (SELECT u.id FROM (SELECT DISTINCT u.id, u.name FROM smart_user u LEFT JOIN smart_addr a ON u.id = a.user_id WHERE u.name = ? AND a.user_id = ? ORDER BY u.id DESC, u.name ASC LIMIT ?, ?) u) AND u.name = ? AND a.user_id = ? ORDER BY u.id DESC, u.name ASC`
-> 3. 插件自动生成统计SQL： `SELECT count(DISTINCT u.id) __count__ FROM smart_user u LEFT JOIN smart_addr a ON u.id = a.user_id WHERE u.name = ? AND a.user_id = ?`
-> 4. 将分页信息返回给调用方
+* 原始SQL：
+```
+SELECT
+	u.*,
+	a.id aid,
+	a.NAME aname,
+	a.user_id 
+FROM
+	smart_user u
+	LEFT JOIN smart_addr a ON u.id = a.user_id 
+WHERE
+	u.NAME = #{param.name} and a.user_id = #{param.userId} 
+ORDER BY
+	u.id DESC,
+	u.NAME ASC
+```
+* 被插件拦截，自动插入分页信息之后的SQL：
+```
+SELECT
+	u.*,
+	a.id aid,
+	a.NAME aname,
+	a.user_id 
+FROM
+	smart_user u
+	LEFT JOIN smart_addr a ON u.id = a.user_id 
+WHERE
+	u.id IN (
+	SELECT
+		u.id 
+	FROM
+		(
+		SELECT DISTINCT
+			u.id,
+			u.NAME 
+		FROM
+			smart_user u
+			LEFT JOIN smart_addr a ON u.id = a.user_id 
+		WHERE
+			u.NAME = ? 
+			AND a.user_id = ? 
+		ORDER BY
+			u.id DESC,
+			u.NAME ASC 
+		LIMIT ?, ? 
+		) u 
+	) 
+	AND u.NAME = ?
+	AND a.user_id = ? 
+ORDER BY
+	u.id DESC,
+	u.NAME ASC
+```
+* 被插件拦截，自动生成统计SQL：
+```
+SELECT
+	count( DISTINCT u.id ) __count__ 
+FROM
+	smart_user u
+	LEFT JOIN smart_addr a ON u.id = a.user_id 
+WHERE
+	u.NAME = ? 
+	AND a.user_id = ?
+```
 
 # 举例
 > 下列举的例都在本工程下的pager-sample中，可以clone下来运行单元测试
