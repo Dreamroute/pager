@@ -2,7 +2,7 @@
 **MyBatis分页插件，支持单表分页，多表关联查询的分页**
 
 ### 使用方法
-1. SpringBoot引入依赖
+* SpringBoot引入依赖
 ```xml
 <dependency>
     <groupId>com.github.dreamroute</groupId>
@@ -10,9 +10,9 @@
     <version>latest version</version>
 </dependency>
 ```
-1. 在Mapper接口方法上添加@Pager注解，并将接口的参数改为类型为PageRequest
-1. 调用方法，例如: `PageResponse<User> result = Pager.page(request, userMapper::selectXxx);`
-1. 完成接入，你无需编写统计SQL语句，也无需关心多表联查数据分页不准确的问题，统统插件帮你完成
+* 在Mapper接口方法上添加@Pager注解，并将接口的参数改为类型为PageRequest
+* 调用方法，例如: `PageResponse<User> result = Pager.page(request, userMapper::selectXxx);`
+* 完成接入，你无需编写统计SQL语句，也无需关心多表联查数据分页不准确的问题，统统插件帮你完成
 
 ### 分页原理
 #### 单表
