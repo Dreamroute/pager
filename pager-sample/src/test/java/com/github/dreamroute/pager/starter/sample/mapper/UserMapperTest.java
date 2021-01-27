@@ -65,6 +65,15 @@ class UserMapperTest {
     }
 
     @Test
+    void selectPageTest() {
+        PageRequest<Object> request = new PageRequest<>();
+        request.setPageNum(1);
+        request.setPageSize(2);
+        PageResponse<User> page = page(request, userMapper::selectPage);
+        System.err.println(page);
+    }
+
+    @Test
     void selectOneTableTest() {
         PageRequest<User> request = new PageRequest<>();
         request.setPageNum(1);

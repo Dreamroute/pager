@@ -164,10 +164,10 @@ public class PagerInterceptor implements Interceptor {
             PlainSelect body = (PlainSelect) select.getSelectBody();
             String columns = body.getSelectItems().stream().map(Object::toString).collect(joining(","));
             String from = body.getFromItem().toString();
-            String where = body.getWhere().toString();
+            String where = ofNullable(body.getWhere()).map(whe -> " WHERE " + whe).orElse("");
 
             if (tableList != null && tableList.size() == SINGLE) {
-                sql = "SELECT " + columns + " FROM " + from + " WHERE " + where;
+                sql = "SELECT " + columns + " FROM " + from + where;
                 container.setCount("SELECT COUNT (*) " + COUNT_NAME + " FROM (" + sql + ") t");
                 String orderBy = ofNullable(body.getOrderByElements()).orElseGet(ArrayList::new).stream().map(Objects::toString).collect(joining(", "));
                 orderBy = StringUtils.isNoneBlank(orderBy) ?  (" ORDER BY " + orderBy) : "";

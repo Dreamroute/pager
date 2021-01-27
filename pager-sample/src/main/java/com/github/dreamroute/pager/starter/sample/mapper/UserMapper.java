@@ -8,6 +8,7 @@ import com.github.dreamroute.pager.starter.sample.dto.SelectFromThreeTablesResp;
 import com.github.dreamroute.pager.starter.sample.dto.SelectFromTwoTables;
 import com.github.dreamroute.pager.starter.sample.dto.SelectFromTwoTablesResp;
 import com.github.dreamroute.pager.starter.sample.entity.User;
+import org.apache.ibatis.annotations.Select;
 
 import java.util.List;
 
@@ -23,4 +24,8 @@ public interface UserMapper extends Mapper<User, Long> {
     List<SelectFromThreeTablesResp> selectFromThreeTables(PageRequest<SelectFromThreeTables> request);
 
     List<User> findByName(String name);
+
+    @Pager
+    @Select("select * from smart_user")
+    List<User> selectPage(PageRequest<Object> request);
 }
