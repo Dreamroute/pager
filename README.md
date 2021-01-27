@@ -15,7 +15,7 @@ MyBatis分页插件，支持单表、多表关联查询的分页
 ###### 5、完成接入
 
 ### 分页原理
-####单表
+#### 单表
 > 1. 对于如下SQL：`select * from smart_user where name = #{param.name}`
 > 2. 插件拦截该SQL，自动插入分页信息：`select * from smart_user where name = ? LIMIT ?, ?`
 > 3. 插件自动生成统计SQL： `SELECT COUNT (*) _count_ FROM (select * from smart_user where name = 'w.dehai') t`
