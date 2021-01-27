@@ -157,65 +157,66 @@ public class PagerInterceptor implements Interceptor {
     }
 
     private void parseSql(String sql, String id) {
+        PagerContainer container = pagerContainer.get(id);
+        Select select;
         try {
-            PagerContainer container = pagerContainer.get(id);
-            Select select = (Select) CCJSqlParserUtil.parse(sql);
-            List<String> tableList = new TablesNamesFinder().getTableList(select);
-
-            PlainSelect body = (PlainSelect) select.getSelectBody();
-            String columns = body.getSelectItems().stream().map(Object::toString).collect(joining(","));
-            String from = body.getFromItem().toString();
-            String where = ofNullable(body.getWhere()).map(Object::toString).orElse("");
-
-            if (tableList != null && tableList.size() == SINGLE) {
-                where = StringUtils.isNotBlank(where) ? (WHERE + where) : "";
-                sql = "SELECT " + columns + FROM + from + where;
-                container.setCount("SELECT COUNT (*) " + COUNT_NAME + " FROM (" + sql + ") t");
-                String orderBy = ofNullable(body.getOrderByElements()).orElseGet(ArrayList::new).stream().map(Objects::toString).collect(joining(", "));
-                orderBy = StringUtils.isNoneBlank(orderBy) ? (" ORDER BY " + orderBy) : "";
-
-                sql = sql + orderBy + " LIMIT ?, ?";
-                container.setSql(sql);
-                container.setSingleTable(true);
-            } else {
-                String joins = body.getJoins().stream().map(Object::toString).collect(joining(" "));
-
-                String alias = "";
-                String distinctBy = container.getDistinctBy();
-                if (distinctBy.indexOf('.') != -1) {
-                    alias = distinctBy.split("\\.")[0];
-                }
-
-                // 如果order by不为空，那么子查询的查询列需要将order by列也带上，否则H2会报错（order by列需要在查询列中），MySQL则不会
-                String orderBy = "";
-                String subQueryColumns = "";
-                List<OrderByElement> orderbyList = body.getOrderByElements();
-                if (!CollectionUtils.isEmpty(orderbyList)) {
-                    orderBy = " ORDER BY " + orderbyList.stream().map(Object::toString).collect(joining(", "));
-
-                    // order by列和主表id列重复，需要去重
-                    Set<String> orderbyListStr = orderbyList.stream().map(OrderByElement::getExpression).map(Objects::toString).collect(toSet());
-                    orderbyListStr.add(distinctBy);
-                    subQueryColumns = String.join(", ", orderbyListStr);
-                }
-
-
-                String afterFrom = FROM + from + " " + joins + WHERE + where;
-                String subQuery = "SELECT DISTINCT " + subQueryColumns + afterFrom;
-                String noCondition = "SELECT " + columns + FROM + from + " " + joins + " ";
-
-                String result = noCondition + WHERE + distinctBy + " IN  (SELECT " + distinctBy + " FROM (" + subQuery + orderBy + " LIMIT ?, ?) " + alias + ")";
-                if (StringUtils.isNoneBlank(where)) {
-                    result = result + " AND " + where;
-                }
-                result += orderBy;
-                container.setSql(result);
-
-                String count = "SELECT count(DISTINCT " + distinctBy + ") " + COUNT_NAME + afterFrom;
-                container.setCount(count);
-            }
+            select = (Select) CCJSqlParserUtil.parse(sql);
         } catch (Exception e) {
             throw new PaggerException("SQL语句异常，你的sql语句是: [" + sql + "]", e);
+        }
+        List<String> tableList = new TablesNamesFinder().getTableList(select);
+
+        PlainSelect body = (PlainSelect) select.getSelectBody();
+        String columns = body.getSelectItems().stream().map(Object::toString).collect(joining(","));
+        String from = body.getFromItem().toString();
+        String where = ofNullable(body.getWhere()).map(Object::toString).orElse("");
+
+        if (tableList != null && tableList.size() == SINGLE) {
+            where = StringUtils.isNotBlank(where) ? (WHERE + where) : "";
+            sql = "SELECT " + columns + FROM + from + where;
+            container.setCount("SELECT COUNT (*) " + COUNT_NAME + " FROM (" + sql + ") t");
+            String orderBy = ofNullable(body.getOrderByElements()).orElseGet(ArrayList::new).stream().map(Objects::toString).collect(joining(", "));
+            orderBy = StringUtils.isNoneBlank(orderBy) ? (" ORDER BY " + orderBy) : "";
+
+            sql = sql + orderBy + " LIMIT ?, ?";
+            container.setSql(sql);
+            container.setSingleTable(true);
+        } else {
+            String joins = body.getJoins().stream().map(Object::toString).collect(joining(" "));
+
+            String alias = "";
+            String distinctBy = container.getDistinctBy();
+            if (distinctBy.indexOf('.') != -1) {
+                alias = distinctBy.split("\\.")[0];
+            }
+
+            // 如果order by不为空，那么子查询的查询列需要将order by列也带上，否则H2会报错（order by列需要在查询列中），MySQL则不会
+            String orderBy = "";
+            String subQueryColumns = "";
+            List<OrderByElement> orderbyList = body.getOrderByElements();
+            if (!CollectionUtils.isEmpty(orderbyList)) {
+                orderBy = " ORDER BY " + orderbyList.stream().map(Object::toString).collect(joining(", "));
+
+                // order by列和主表id列重复，需要去重
+                Set<String> orderbyListStr = orderbyList.stream().map(OrderByElement::getExpression).map(Objects::toString).collect(toSet());
+                orderbyListStr.add(distinctBy);
+                subQueryColumns = String.join(", ", orderbyListStr);
+            }
+
+
+            String afterFrom = FROM + from + " " + joins + WHERE + where;
+            String subQuery = "SELECT DISTINCT " + subQueryColumns + afterFrom;
+            String noCondition = "SELECT " + columns + FROM + from + " " + joins + " ";
+
+            String result = noCondition + WHERE + distinctBy + " IN  (SELECT " + distinctBy + " FROM (" + subQuery + orderBy + " LIMIT ?, ?) " + alias + ")";
+            if (StringUtils.isNoneBlank(where)) {
+                result = result + " AND " + where;
+            }
+            result += orderBy;
+            container.setSql(result);
+
+            String count = "SELECT count(DISTINCT " + distinctBy + ") " + COUNT_NAME + afterFrom;
+            container.setCount(count);
         }
     }
 
