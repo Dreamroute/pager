@@ -11,7 +11,7 @@
     <version>latest version</version>
 </dependency>
 ```
-* 在Mapper接口方法上添加@Pager注解，并将接口的参数改为类型为PageRequest<T>
+* 在Mapper接口方法上添加@Pager注解，并将接口的参数改为类型为`PageRequest<T>`
 > 1. @Pager的属性，distinctBy（默认是"id"），用于主表去重，一般来说是主表别名+主键字段，如: u.id
 > 2. 单表不需要配置distinctBy属性
 * 调用方法，例如: `PageResponse<User> result = Pager.page(request, userMapper::selectXxx);`
