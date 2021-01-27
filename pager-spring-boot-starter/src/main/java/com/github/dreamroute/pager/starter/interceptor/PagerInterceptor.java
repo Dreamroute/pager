@@ -6,6 +6,7 @@ import com.github.dreamroute.pager.starter.anno.PagerContainer;
 import com.github.dreamroute.pager.starter.api.PageRequest;
 import com.github.dreamroute.pager.starter.exception.PaggerException;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
+import net.sf.jsqlparser.statement.select.OrderByElement;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.util.TablesNamesFinder;
@@ -24,6 +25,7 @@ import org.apache.ibatis.session.Configuration;
 import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.RowBounds;
 import org.apache.ibatis.transaction.Transaction;
+import org.springframework.util.CollectionUtils;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -31,12 +33,15 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static com.github.dreamroute.pager.starter.anno.PagerContainer.ID;
 import static java.util.Arrays.stream;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.joining;
+import static java.util.stream.Collectors.toSet;
 
 /**
  * 分页插件
@@ -167,8 +172,6 @@ public class PagerInterceptor implements Interceptor {
                 String from = body.getFromItem().toString();
                 String joins = body.getJoins().stream().map(Object::toString).collect(joining(" "));
                 String where = body.getWhere().toString();
-                String orderBy = ofNullable(body.getOrderByElements()).orElseGet(ArrayList::new).stream().map(Object::toString).collect(joining(", "));
-                orderBy = StringUtils.isNotBlank(orderBy) ? (" ORDER BY " + orderBy) : "";
 
                 String alias = "";
                 String distinctBy = container.getDistinctBy();
@@ -176,11 +179,25 @@ public class PagerInterceptor implements Interceptor {
                     alias = distinctBy.split("\\.")[0];
                 }
 
+                // 如果order by不为空，那么子查询的查询列需要将order by列也带上，否则H2会报错（order by列需要在查询列中），MySQL则不会
+                String orderBy = "";
+                String subQueryColumns = "";
+                List<OrderByElement> orderbyList = body.getOrderByElements();
+                if (!CollectionUtils.isEmpty(orderbyList)) {
+                    orderBy = " ORDER BY " + orderbyList.stream().map(Object::toString).collect(joining(", "));
+
+                    // order by列和主表id列重复，需要去重
+                    Set<String> orderbyListStr = orderbyList.stream().map(OrderByElement::getExpression).map(Objects::toString).collect(toSet());
+                    orderbyListStr.add(distinctBy);
+                    subQueryColumns = orderbyListStr.stream().collect(joining(", "));
+                }
+
+
                 String afterFrom = " FROM " + from + " " + joins + " WHERE " + where;
-                String subQuery = "SELECT DISTINCT " + distinctBy + afterFrom;
+                String subQuery = "SELECT DISTINCT " + subQueryColumns + afterFrom;
                 String noCondition = "SELECT " + columns + " FROM " + from + " " + joins + " ";
 
-                String result = noCondition + " WHERE " + distinctBy + " IN  (SELECT * FROM (" + subQuery + orderBy + " LIMIT ?, ?) " + alias + ")";
+                String result = noCondition + " WHERE " + distinctBy + " IN  (SELECT " + distinctBy + " FROM (" + subQuery + orderBy + " LIMIT ?, ?) " + alias + ")";
                 if (StringUtils.isNoneBlank(where)) {
                     result = result + " AND " + where;
                 }
