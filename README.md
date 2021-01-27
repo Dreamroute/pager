@@ -40,7 +40,7 @@ LIMIT ?, ?
 SELECT
 	COUNT( * ) _count_ 
 FROM
-	( SELECT * FROM smart_user WHERE NAME = 'w.dehai' ) t
+	( SELECT * FROM smart_user WHERE NAME = ? ) t
 ```
 
 #### 多表
