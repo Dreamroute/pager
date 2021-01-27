@@ -12,6 +12,8 @@
 </dependency>
 ```
 * 在Mapper接口方法上添加@Pager注解，并将接口的参数改为类型为PageRequest<T>
+> 1. @Pager的属性，distinctBy（默认是"id"），用于主表去重，一般来说是主表别名+主键字段，如: u.id
+> 2. 单表不需要配置distinctBy属性
 * 调用方法，例如: `PageResponse<User> result = Pager.page(request, userMapper::selectXxx);`
 * 完成接入，你无需编写统计SQL语句，也无需关心多表联查数据分页不准确的问题，统统插件帮你完成
 
@@ -228,10 +230,6 @@ public interface UserMapper {
     List<SelectFromThreeTablesResp> selectFromThreeTables(PageRequest<SelectFromThreeTables> request);
 }
 ```
-### @Pager注解说明：
-* 需要分页的查询接口需要被@Pager标记，同时，多表还需要设置distinctBy属性，单表不需要
-* 请求被分页拦截的条件：1. @Page标记接口，2.参数是：PageRequest
-* @Pager的属性，distinctBy（主表id列，默认是"id"），用于主表去重
 
 ### SQL语句：
 ```
