@@ -36,6 +36,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 import static com.github.dreamroute.pager.starter.anno.PagerContainer.ID;
 import static java.util.Arrays.stream;
@@ -160,18 +161,22 @@ public class PagerInterceptor implements Interceptor {
             Select select = (Select) CCJSqlParserUtil.parse(sql);
             List<String> tableList = new TablesNamesFinder().getTableList(select);
 
+            PlainSelect body = (PlainSelect) select.getSelectBody();
+            String columns = body.getSelectItems().stream().map(Object::toString).collect(joining(","));
+            String from = body.getFromItem().toString();
+            String where = body.getWhere().toString();
+
             if (tableList != null && tableList.size() == SINGLE) {
-                // TODO 单表需要取消掉统计排序
+                sql = "SELECT " + columns + " FROM " + from + " WHERE " + where;
                 container.setCount("SELECT COUNT (*) " + COUNT_NAME + " FROM (" + sql + ") t");
-                sql += " LIMIT ?, ?";
+                String orderBy = ofNullable(body.getOrderByElements()).orElseGet(ArrayList::new).stream().map(Objects::toString).collect(joining(", "));
+                orderBy = StringUtils.isNoneBlank(orderBy) ?  (" ORDER BY " + orderBy) : "";
+
+                sql = sql + orderBy + " LIMIT ?, ?";
                 container.setSql(sql);
                 container.setSingleTable(true);
             } else {
-                PlainSelect body = (PlainSelect) select.getSelectBody();
-                String columns = body.getSelectItems().stream().map(Object::toString).collect(joining(","));
-                String from = body.getFromItem().toString();
                 String joins = body.getJoins().stream().map(Object::toString).collect(joining(" "));
-                String where = body.getWhere().toString();
 
                 String alias = "";
                 String distinctBy = container.getDistinctBy();
