@@ -11,6 +11,7 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.util.TablesNamesFinder;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.ibatis.cache.CacheKey;
 import org.apache.ibatis.executor.Executor;
 import org.apache.ibatis.executor.parameter.ParameterHandler;
 import org.apache.ibatis.mapping.BoundSql;
@@ -48,7 +49,10 @@ import static java.util.stream.Collectors.toSet;
  *
  * @author w.dehi
  */
-@Intercepts(@Signature(type = Executor.class, method = "query", args = {MappedStatement.class, Object.class, RowBounds.class, ResultHandler.class}))
+@Intercepts({
+        @Signature(type = Executor.class, method = "query", args = {MappedStatement.class, Object.class, RowBounds.class, ResultHandler.class}),
+        @Signature(type = Executor.class, method = "query", args = {MappedStatement.class, Object.class, RowBounds.class, ResultHandler.class, CacheKey.class, BoundSql.class})
+})
 public class PagerInterceptor implements Interceptor {
 
     private ConcurrentHashMap<String, PagerContainer> pagerContainer;
