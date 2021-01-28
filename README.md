@@ -8,7 +8,7 @@
 <dependency>
     <groupId>com.github.dreamroute</groupId>
     <artifactId>pager-spring-boot-starter</artifactId>
-    <version>latest version</version>
+    <version>1.3-RELEASE</version>
 </dependency>
 ```
 * 在Mapper接口方法上添加@Pager注解，并将接口的参数改为类型为`PageRequest<T>`
