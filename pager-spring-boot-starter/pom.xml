@@ -9,6 +9,25 @@
     </parent>
 
     <artifactId>pager-spring-boot-starter</artifactId>
-    <name>${project.artifactId}</name>
+
+    <name>pager</name>
+    <url>https://github.com/Dreamroute/${project.name}</url>
+    <scm>
+        <connection>${project.url}</connection>
+        <developerConnection>${project.url}</developerConnection>
+        <url>${project.url}</url>
+    </scm>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <configuration>
+                    <skip>false</skip>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 
 </project>
