@@ -8,11 +8,12 @@
 <dependency>
     <groupId>com.github.dreamroute</groupId>
     <artifactId>pager-spring-boot-starter</artifactId>
-    <version>latest version</version>
+    <version>1.3-RELEASE</version>
 </dependency>
 ```
 * 在Mapper接口方法上添加@Pager注解，并将接口的参数改为类型为`PageRequest<T>`
-> 1. @Pager的属性，distinctBy（默认是"id"），用于主表去重，一般来说是主表别名+主键字段，如: u.id
+> 1. @Pager的属性，distinctBy（默认是"id"），用在多表查询的主表去重，一般来说是主表别名+主键字段，如：
+>`select * from user u left join addr a on u.id = a.uid where xxx order by u.id`，那么@Pager(distinctBy = u.id)
 > 2. 单表不需要配置distinctBy属性
 * 调用方法，例如: `PageResponse<User> result = Pager.page(request, userMapper::selectXxx);`
 * 完成接入，你无需编写统计SQL语句，也无需关心多表联查数据分页不准确的问题，统统插件帮你完成
