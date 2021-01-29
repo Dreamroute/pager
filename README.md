@@ -19,6 +19,7 @@
 > 1. @Pager的属性，distinctBy（默认是"id"），用在多表查询的主表去重，一般来说是主表别名+主键字段，如：
 >`select * from user u left join addr a on u.id = a.uid where xxx order by u.id`，那么@Pager(distinctBy = u.id)
 > 2. 单表不需要配置distinctBy属性
+> 3. 定义请求参数`PageRequest<T> request = ...`
 * 调用方法，例如: `PageResponse<User> result = Pager.page(request, userMapper::selectXxx);`
 * 完成接入，你无需编写统计SQL语句，也无需关心多表联查数据分页不准确的问题，统统插件帮你完成
 
