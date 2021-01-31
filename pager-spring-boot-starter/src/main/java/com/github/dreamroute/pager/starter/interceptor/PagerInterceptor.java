@@ -25,7 +25,10 @@ import org.apache.ibatis.reflection.MetaObject;
 import org.apache.ibatis.session.Configuration;
 import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.RowBounds;
+import org.apache.ibatis.session.SqlSessionFactory;
 import org.apache.ibatis.transaction.Transaction;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.util.CollectionUtils;
 
 import java.sql.Connection;
@@ -37,7 +40,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.locks.ReentrantLock;
 
 import static com.github.dreamroute.pager.starter.anno.PagerContainer.ID;
 import static com.github.dreamroute.pager.starter.interceptor.ProxyUtil.getOriginObj;
@@ -55,7 +57,7 @@ import static java.util.stream.Collectors.toSet;
         @Signature(type = Executor.class, method = "query", args = {MappedStatement.class, Object.class, RowBounds.class, ResultHandler.class}),
         @Signature(type = Executor.class, method = "query", args = {MappedStatement.class, Object.class, RowBounds.class, ResultHandler.class, CacheKey.class, BoundSql.class})
 })
-public class PagerInterceptor implements Interceptor {
+public class PagerInterceptor implements Interceptor, ApplicationListener<ContextRefreshedEvent> {
 
     private ConcurrentHashMap<String, PagerContainer> pagerContainer;
 
@@ -67,21 +69,20 @@ public class PagerInterceptor implements Interceptor {
     private static final String WHERE = " WHERE ";
     private static final String FROM = " FROM ";
 
-    private ReentrantLock lock = new ReentrantLock();
+    @Override
+    public void onApplicationEvent(ContextRefreshedEvent event) {
+        SqlSessionFactory sqlSessionFactory = event.getApplicationContext().getBean(SqlSessionFactory.class);
+        // 将此方法移动到Spring容器初始化之后执行的原因是：如果放在下方的intercept方法中来执行，
+        // 那么就会有并发问题（获取ms的sqlSource然后修改sqlSource），那么就需要对该方法加锁，影响性能
+        parsePagerContainer(sqlSessionFactory.getConfiguration());
+    }
 
     @Override
     public Object intercept(Invocation invocation) throws Throwable {
         Object[] args = invocation.getArgs();
         MappedStatement ms = (MappedStatement) args[0];
         Object param = args[1];
-
         Configuration config = ms.getConfiguration();
-        try {
-            lock.lock();
-            parsePagerContainer(config);
-        } finally {
-            lock.unlock();
-        }
 
         PagerContainer pc = pagerContainer.get(ms.getId());
         // 拦截请求的条件：1. @Page标记接口，2.参数是：PageRequest
