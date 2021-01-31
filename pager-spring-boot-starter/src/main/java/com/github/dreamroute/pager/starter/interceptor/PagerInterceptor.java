@@ -37,6 +37,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.ReentrantLock;
 
 import static com.github.dreamroute.pager.starter.anno.PagerContainer.ID;
 import static com.github.dreamroute.pager.starter.interceptor.ProxyUtil.getOriginObj;
@@ -66,6 +67,8 @@ public class PagerInterceptor implements Interceptor {
     private static final String WHERE = " WHERE ";
     private static final String FROM = " FROM ";
 
+    private ReentrantLock lock = new ReentrantLock();
+
     @Override
     public Object intercept(Invocation invocation) throws Throwable {
         Object[] args = invocation.getArgs();
@@ -73,7 +76,12 @@ public class PagerInterceptor implements Interceptor {
         Object param = args[1];
 
         Configuration config = ms.getConfiguration();
-        parsePagerContainer(config);
+        try {
+            lock.lock();
+            parsePagerContainer(config);
+        } finally {
+            lock.unlock();
+        }
 
         PagerContainer pc = pagerContainer.get(ms.getId());
         // 拦截请求的条件：1. @Page标记接口，2.参数是：PageRequest
