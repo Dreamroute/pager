@@ -39,6 +39,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static com.github.dreamroute.pager.starter.anno.PagerContainer.ID;
+import static com.github.dreamroute.pager.starter.interceptor.ProxyUtil.getOriginObj;
 import static java.util.Arrays.stream;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.joining;
@@ -61,7 +62,7 @@ public class PagerInterceptor implements Interceptor {
      * 单表
      */
     private static final int SINGLE = 1;
-    private static final String COUNT_NAME = "_$_count_$_";
+    private static final String COUNT_NAME = "_$count$_";
     private static final String WHERE = " WHERE ";
     private static final String FROM = " FROM ";
 
@@ -80,18 +81,13 @@ public class PagerInterceptor implements Interceptor {
             return invocation.proceed();
         }
 
-        BoundSql boundSql = ms.getBoundSql(param);
-        String sql = boundSql.getSql();
-
-        parseSql(sql, ms.getId());
-
-        Executor executor = (Executor) (invocation.getTarget());
+        Executor executor = (Executor) (getOriginObj(invocation.getTarget()));
         Transaction transaction = executor.getTransaction();
         Connection conn = transaction.getConnection();
         String count = pc.getCount();
         PreparedStatement ps = conn.prepareStatement(count);
-        BoundSql countBoundSql = new BoundSql(config, count, boundSql.getParameterMappings(), boundSql.getParameterObject());
-        ParameterHandler parameterHandler = config.newParameterHandler(ms, boundSql.getParameterObject(), countBoundSql);
+        BoundSql countBoundSql = new BoundSql(config, count, pc.getOriginPmList(), param);
+        ParameterHandler parameterHandler = config.newParameterHandler(ms, param, countBoundSql);
         parameterHandler.setParameters(ps);
         ResultSet rs = ps.executeQuery();
         PageContainer<Object> container = new PageContainer<>();
@@ -112,12 +108,6 @@ public class PagerInterceptor implements Interceptor {
         int start = (pageNum - 1) * pageSize;
         pr.setPageNum(start);
 
-        List<ParameterMapping> pmList = wrapParameterMapping(config, boundSql, pagerContainer.get(ms.getId()).isSingleTable());
-        MetaObject moms = config.newMetaObject(ms);
-        // sql和pm都需要设置在ms里，设置在boundsql里没用，因为使用的是ms里的sql和pm
-        moms.setValue("sqlSource.sqlSource.sql", pc.getSql());
-        moms.setValue("sqlSource.sqlSource.parameterMappings", pmList);
-
         if (container.getTotal() != 0) {
             Object result = invocation.proceed();
             List<?> ls = (List<?>) result;
@@ -128,41 +118,63 @@ public class PagerInterceptor implements Interceptor {
     }
 
     /**
-     * 构建ParameterMapping
+     * 这里将pagerContainer进行缓存，由于分页插件的执行sql是固定的，所以可以缓存
      */
-    private List<ParameterMapping> wrapParameterMapping(Configuration config, BoundSql boundSql, boolean singleTable) {
-        List<ParameterMapping> parameterMappings = boundSql.getParameterMappings();
-        List<ParameterMapping> pmList = new ArrayList<>(ofNullable(parameterMappings).orElseGet(ArrayList::new));
-        pmList.add(new ParameterMapping.Builder(config, "pageNum", int.class).build());
-        pmList.add(new ParameterMapping.Builder(config, "pageSize", int.class).build());
-        // 多表情况下：由于插件改写sql会在sql的末尾增加一次查询条件，所以这里需要在sql末尾再次增加一次查询条件
-        if (!singleTable) {
-            pmList.addAll(ofNullable(parameterMappings).orElseGet(ArrayList::new));
-        }
-        return pmList;
-    }
-
     private void parsePagerContainer(Configuration config) {
         if (pagerContainer == null) {
             pagerContainer = new ConcurrentHashMap<>();
-            Collection<Class<?>> mappers = config.getMapperRegistry().getMappers();
-            if (mappers != null && !mappers.isEmpty()) {
-                for (Class<?> mapper : mappers) {
-                    String mapperName = mapper.getName();
-                    stream(mapper.getDeclaredMethods()).filter(method -> AnnotationUtil.hasAnnotation(method, Pager.class)).forEach(method -> {
-                        String dictinctBy = AnnotationUtil.getAnnotationValue(method, Pager.class, "distinctBy");
-                        PagerContainer container = new PagerContainer();
-                        container.setDistinctBy(StringUtils.isEmpty(dictinctBy) ? ID : dictinctBy);
-                        pagerContainer.put(mapperName + "." + method.getName(), container);
-                    });
-                }
+            parseAnno(config);
+            updateSqlSource(config);
+        }
+    }
+
+    private void parseAnno(Configuration config) {
+        Collection<Class<?>> mappers = config.getMapperRegistry().getMappers();
+        if (mappers != null && !mappers.isEmpty()) {
+            for (Class<?> mapper : mappers) {
+                String mapperName = mapper.getName();
+                stream(mapper.getDeclaredMethods()).filter(method -> AnnotationUtil.hasAnnotation(method, Pager.class)).forEach(method -> {
+                    String dictinctBy = AnnotationUtil.getAnnotationValue(method, Pager.class, "distinctBy");
+                    PagerContainer container = new PagerContainer();
+                    container.setDistinctBy(StringUtils.isEmpty(dictinctBy) ? ID : dictinctBy);
+                    pagerContainer.put(mapperName + "." + method.getName(), container);
+                });
             }
         }
     }
 
-    private void parseSql(String sql, String id) {
+    private void updateSqlSource(Configuration config) {
+        pagerContainer.keySet().stream().map(config::getMappedStatement).forEach(ms -> {
+            MetaObject mo = config.newMetaObject(ms);
+
+            String beforeSql = (String) mo.getValue("sqlSource.sqlSource.sql");
+            String afterSql = parseSql(beforeSql, ms.getId());
+            mo.setValue("sqlSource.sqlSource.sql", afterSql);
+
+            @SuppressWarnings("unchecked") List<ParameterMapping> beforePmList = (List<ParameterMapping>) mo.getValue("sqlSource.sqlSource.parameterMappings");
+            // 这里把原始的pmList保存起来，count的时会用到
+            pagerContainer.get(ms.getId()).setOriginPmList(beforePmList);
+            List<ParameterMapping> afterPmList = parseParameterMappings(config, ms.getId(), beforePmList);
+            mo.setValue("sqlSource.sqlSource.parameterMappings", afterPmList);
+        });
+
+    }
+
+    private List<ParameterMapping> parseParameterMappings(Configuration config, String id, List<ParameterMapping> pmList) {
+        List<ParameterMapping> result = new ArrayList<>(ofNullable(pmList).orElseGet(ArrayList::new));
+        result.add(new ParameterMapping.Builder(config, "pageNum", int.class).build());
+        result.add(new ParameterMapping.Builder(config, "pageSize", int.class).build());
+        // 多表情况下：由于插件改写sql会在sql的末尾增加一次查询条件，所以这里需要在sql末尾再次增加一次查询条件
+        if (!pagerContainer.get(id).isSingleTable()) {
+            result.addAll(ofNullable(pmList).orElseGet(ArrayList::new));
+        }
+        return result;
+    }
+
+    private String parseSql(String sql, String id) {
         PagerContainer container = pagerContainer.get(id);
         Select select;
+        String afterSql;
         try {
             select = (Select) CCJSqlParserUtil.parse(sql);
         } catch (Exception e) {
@@ -182,8 +194,7 @@ public class PagerInterceptor implements Interceptor {
             String orderBy = ofNullable(body.getOrderByElements()).orElseGet(ArrayList::new).stream().map(Objects::toString).collect(joining(", "));
             orderBy = StringUtils.isNoneBlank(orderBy) ? (" ORDER BY " + orderBy) : "";
 
-            sql = sql + orderBy + " LIMIT ?, ?";
-            container.setSql(sql);
+            afterSql = sql + orderBy + " LIMIT ?, ?";
             container.setSingleTable(true);
         } else {
             String joins = body.getJoins().stream().map(Object::toString).collect(joining(" "));
@@ -216,12 +227,11 @@ public class PagerInterceptor implements Interceptor {
             if (StringUtils.isNoneBlank(where)) {
                 result = result + " AND " + where;
             }
-            result += orderBy;
-            container.setSql(result);
-
+            afterSql = result + orderBy;
             String count = "SELECT count(DISTINCT " + distinctBy + ") " + COUNT_NAME + afterFrom;
             container.setCount(count);
         }
+        return afterSql;
     }
 
 }
