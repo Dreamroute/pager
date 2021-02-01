@@ -16,6 +16,15 @@ import static java.util.Optional.ofNullable;
 public class Pager {
     private Pager() {}
 
+    /**
+     * 调用此方法，就能获取到分页信息
+     *
+     * @param pageRequest 分页请求
+     * @param query 分页mapper方法
+     * @param <T> 分页请求参数类型
+     * @param <R> 分页mapper的返回值类型
+     * @return 返回此次查询的分页信息
+     */
     public static <T, R> PageResponse<R> page(PageRequest<T> pageRequest, Function<PageRequest<T>, List<R>> query) {
         PageContainer<R> resp = (PageContainer<R>) query.apply(pageRequest);
         PageResponse<R> result = new PageResponse<>();
