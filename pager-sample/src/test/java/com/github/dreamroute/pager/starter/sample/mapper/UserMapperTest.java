@@ -88,6 +88,20 @@ class UserMapperTest {
     }
 
     @Test
+    void selectOneTableNoResultTest() {
+        PageRequest<User> request = new PageRequest<>();
+        request.setPageNum(1);
+        request.setPageSize(2);
+
+        User user = new User();
+        user.setName("~~");
+        request.setParam(user);
+
+        PageResponse<User> result = Pager.page(request, userMapper::selectOneTable);
+        System.err.println(result);
+    }
+
+    @Test
     void selectFromTwoTablesTest() {
         PageRequest<SelectFromTwoTables> request = new PageRequest<>();
         request.setPageNum(1);
