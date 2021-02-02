@@ -30,8 +30,6 @@
         </developer>
     </developers>
     <scm>
-        <connection>${project.url}</connection>
-        <developerConnection>${project.url}</developerConnection>
         <url>${project.url}</url>
     </scm>
 

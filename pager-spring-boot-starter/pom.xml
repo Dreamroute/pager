@@ -13,8 +13,6 @@
     <name>pager</name>
     <url>https://github.com/Dreamroute/${project.name}</url>
     <scm>
-        <connection>${project.url}</connection>
-        <developerConnection>${project.url}</developerConnection>
         <url>${project.url}</url>
     </scm>
 
