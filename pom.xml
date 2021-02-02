@@ -15,7 +15,7 @@
 
     <!-- project info -->
     <name>pager</name>
-    <description>nothing</description>
+    <description>MyBatis分页插件</description>
     <url>https://github.com/Dreamroute/pager</url>
     <licenses>
         <license>
@@ -36,7 +36,7 @@
     <properties>
 
         <!-- 版本信息 -->
-        <revision>1.7-RELEASE</revision>
+        <revision>1.8-RELEASE</revision>
 
         <!-- 编码相关 -->
         <java.version>1.8</java.version>
@@ -104,10 +104,6 @@
     </dependencies>
 
     <distributionManagement>
-        <snapshotRepository>
-            <id>ossrh</id>
-            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-        </snapshotRepository>
         <repository>
             <id>ossrh</id>
             <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
@@ -189,7 +185,8 @@
                 <version>1.2.5</version>
                 <configuration>
                     <updatePomFile>true</updatePomFile>
-                    <flattenMode>oss</flattenMode>
+                    <flattenMode>ossrh</flattenMode>
+                    <pomElements><name/></pomElements>
                 </configuration>
                 <executions>
                     <execution>
@@ -208,6 +205,7 @@
                     </execution>
                 </executions>
             </plugin>
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-deploy-plugin</artifactId>

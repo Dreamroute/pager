@@ -9,12 +9,7 @@
     </parent>
 
     <artifactId>pager-spring-boot-starter</artifactId>
-
     <name>pager</name>
-    <url>https://github.com/Dreamroute/${project.name}</url>
-    <scm>
-        <url>${project.url}</url>
-    </scm>
 
     <build>
         <plugins>
