@@ -199,7 +199,7 @@ public class PagerInterceptor implements Interceptor, ApplicationListener<Contex
         if (tableList != null && tableList.size() == SINGLE) {
             where = StringUtils.isNotBlank(where) ? (WHERE + where) : "";
             sql = "SELECT " + columns + FROM + from + where;
-            container.setCount("SELECT COUNT(*) " + COUNT_NAME + " FROM (" + sql + ") t");
+            container.setCount("SELECT COUNT(*) " + COUNT_NAME + " FROM (" + sql + ") _$_t");
             String orderBy = ofNullable(body.getOrderByElements()).orElseGet(ArrayList::new).stream().map(Objects::toString).collect(joining(", "));
             orderBy = StringUtils.isNoneBlank(orderBy) ? (" ORDER BY " + orderBy) : "";
 
