@@ -1,5 +1,6 @@
 package com.github.dreamroute.pager.starter.jsqlparser;
 
+import lombok.SneakyThrows;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.select.FromItem;
 import net.sf.jsqlparser.statement.select.PlainSelect;
@@ -26,6 +27,14 @@ class BaseTest {
         String joins = body.getJoins().stream().map(Object::toString).collect(joining(","));
         String result = "SELECT " + columns + " FROM " + fromItem.toString() + " " + joins + " ";
         System.err.println(result);
+    }
+
+    @Test
+    @SneakyThrows
+    void conditionTest() {
+        String sql = "select * from smart_user where name = ? and password = ? or version > ?";
+        Select parse = (Select) CCJSqlParserUtil.parse(sql);
+        System.err.println("END");
     }
 
 }
