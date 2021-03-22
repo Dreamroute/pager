@@ -47,9 +47,9 @@ LIMIT ?, ?
 * 被插件拦截，自动生成统计SQL：
 ```
 SELECT
-	COUNT( * ) _count_ 
+	COUNT( * ) _$count$_ 
 FROM
-	( SELECT * FROM smart_user WHERE NAME = ? ) t
+	( SELECT * FROM smart_user WHERE NAME = ? ) _$_t
 ```
 
 #### 多表
