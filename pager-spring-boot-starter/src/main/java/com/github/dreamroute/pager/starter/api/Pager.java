@@ -29,7 +29,7 @@ public class Pager {
         PageContainer<R> resp = (PageContainer<R>) query.apply(pageRequest);
         PageResponse<R> result = new PageResponse<>();
         List<R> data = new ArrayList<>(ofNullable(resp).orElseGet(PageContainer::new));
-        result.setData(data);
+        result.setList(data);
         result.setTotalNum(resp.getTotal());
         result.setPageNum(resp.getPageNum());
         result.setPageSize(resp.getPageSize());
