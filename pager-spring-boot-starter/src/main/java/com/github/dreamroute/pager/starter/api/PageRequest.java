@@ -1,10 +1,7 @@
 package com.github.dreamroute.pager.starter.api;
 
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.experimental.SuperBuilder;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Max;
@@ -18,9 +15,6 @@ import java.io.Serializable;
  * @author w.dehai
  */
 @Data
-@SuperBuilder
-@AllArgsConstructor
-@NoArgsConstructor
 public class PageRequest<E> implements Serializable {
 
     /** 分页信息 **/
