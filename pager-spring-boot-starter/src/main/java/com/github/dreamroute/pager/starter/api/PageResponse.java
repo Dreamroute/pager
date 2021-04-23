@@ -22,6 +22,6 @@ public class PageResponse<T> implements Serializable {
     private int pageNum;
     private int pageSize;
     private long totalNum;
-    private List<T> data;
+    private List<T> list;
 
 }
