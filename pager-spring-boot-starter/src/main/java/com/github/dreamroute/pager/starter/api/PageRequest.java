@@ -4,11 +4,13 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
+import java.io.Serializable;
 
 /**
  * 分页请求
@@ -16,10 +18,10 @@ import javax.validation.constraints.NotNull;
  * @author w.dehai
  */
 @Data
-@Builder
+@SuperBuilder
 @AllArgsConstructor
 @NoArgsConstructor
-public final class PageRequest<E> {
+public class PageRequest<E> implements Serializable {
 
     /** 分页信息 **/
     @Min(1)
