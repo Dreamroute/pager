@@ -1,6 +1,5 @@
 package com.github.dreamroute.pager.starter.api;
 
-import lombok.Builder;
 import lombok.Data;
 
 import javax.validation.Valid;
@@ -20,13 +19,10 @@ public class PageRequest<E> implements Serializable {
     /** 分页信息 **/
     @Min(1)
     @NotNull
-    @Builder.Default
-    @Max(Integer.MAX_VALUE)
     private int pageNum = 1;
 
     @Min(1)
     @NotNull
-    @Builder.Default
     @Max(Integer.MAX_VALUE)
     private int pageSize = 10;
 
