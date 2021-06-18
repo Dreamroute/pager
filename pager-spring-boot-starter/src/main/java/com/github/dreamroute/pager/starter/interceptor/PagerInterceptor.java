@@ -49,7 +49,10 @@ import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toSet;
 
 /**
- * 分页插件
+ * 分页插件，原理：通过注解标注需要分页的接口方法，拦截该方法，抽取sql原生sql，然后做3个动作：
+ * 1、根据原生sql语句生成一个统计的sql，并且执行查询，获得统计结果；
+ * 2、改写原生sql，加上分页参数，执行查询操作；
+ * 3、将统计信息和分页结果合并成返回信息；
  *
  * @author w.dehi
  */
