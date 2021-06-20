@@ -41,12 +41,12 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static com.github.dreamroute.pager.starter.anno.PagerContainer.ID;
 import static com.github.dreamroute.pager.starter.interceptor.ProxyUtil.getOriginObj;
 import static java.util.Arrays.stream;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toSet;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 /**
  * 分页插件，原理：通过注解标注需要分页的接口方法，拦截该方法，抽取sql原生sql，然后做3个动作：
@@ -58,11 +58,12 @@ import static java.util.stream.Collectors.toSet;
  */
 @Intercepts({
         @Signature(type = Executor.class, method = "query", args = {MappedStatement.class, Object.class, RowBounds.class, ResultHandler.class}),
-        @Signature(type = Executor.class, method = "query", args = {MappedStatement.class, Object.class, RowBounds.class, ResultHandler.class, CacheKey.class, BoundSql.class})
+        @Signature(type = Executor.class, method = "query", args = {MappedStatement.class, Object.class, RowBounds.class, ResultHandler.class, CacheKey.class, BoundSql.class}),
+        @Signature(type = ParameterHandler.class, method = "setParameters", args = {PreparedStatement.class})
 })
 public class PagerInterceptor implements Interceptor, ApplicationListener<ContextRefreshedEvent> {
 
-    private ConcurrentHashMap<String, PagerContainer> pagerContainer;
+    private final ConcurrentHashMap<String, PagerContainer> pagerContainer = new ConcurrentHashMap<>();
 
     /**
      * 单表
@@ -72,12 +73,15 @@ public class PagerInterceptor implements Interceptor, ApplicationListener<Contex
     private static final String WHERE = " WHERE ";
     private static final String FROM = " FROM ";
 
+    private Configuration config;
+
     @Override
     public void onApplicationEvent(ContextRefreshedEvent event) {
         SqlSessionFactory sqlSessionFactory = event.getApplicationContext().getBean(SqlSessionFactory.class);
         // 将此方法移动到Spring容器初始化之后执行的原因是：如果放在下方的intercept方法中来执行，
         // 那么就会有并发问题（获取ms的sqlSource然后修改sqlSource），那么就需要对该方法加锁，影响性能
-        parsePagerContainer(sqlSessionFactory.getConfiguration());
+        config = sqlSessionFactory.getConfiguration();
+        parsePagerContainer();
     }
 
     @Override
@@ -85,8 +89,6 @@ public class PagerInterceptor implements Interceptor, ApplicationListener<Contex
         Object[] args = invocation.getArgs();
         MappedStatement ms = (MappedStatement) args[0];
         Object param = args[1];
-        Configuration config = ms.getConfiguration();
-
         PagerContainer pc = pagerContainer.get(ms.getId());
         // 拦截请求的条件：1. @Page标记接口，2.参数是：PageRequest
         if (pc == null || !(param instanceof PageRequest)) {
@@ -132,30 +134,29 @@ public class PagerInterceptor implements Interceptor, ApplicationListener<Contex
     /**
      * 这里将pagerContainer进行缓存，由于分页插件的执行sql是固定的，所以可以缓存
      */
-    private void parsePagerContainer(Configuration config) {
-        if (pagerContainer == null) {
-            pagerContainer = new ConcurrentHashMap<>();
-            parseAnno(config);
-            updateSqlSource(config);
-        }
+    private void parsePagerContainer() {
+        parseAnno();
+        updateSqlSource();
     }
 
-    private void parseAnno(Configuration config) {
+    private void parseAnno() {
         Collection<Class<?>> mappers = config.getMapperRegistry().getMappers();
         if (mappers != null && !mappers.isEmpty()) {
             for (Class<?> mapper : mappers) {
                 String mapperName = mapper.getName();
                 stream(mapper.getDeclaredMethods()).filter(method -> AnnotationUtil.hasAnnotation(method, Pager.class)).forEach(method -> {
-                    String dictinctBy = AnnotationUtil.getAnnotationValue(method, Pager.class, "distinctBy");
                     PagerContainer container = new PagerContainer();
-                    container.setDistinctBy(StringUtils.isEmpty(dictinctBy) ? ID : dictinctBy);
+                    String dictinctBy = AnnotationUtil.getAnnotationValue(method, Pager.class, "distinctBy");
+                    if (isNotBlank(dictinctBy)) {
+                        container.setDistinctBy(dictinctBy);
+                    }
                     pagerContainer.put(mapperName + "." + method.getName(), container);
                 });
             }
         }
     }
 
-    private void updateSqlSource(Configuration config) {
+    private void updateSqlSource() {
         pagerContainer.keySet().stream().map(config::getMappedStatement).forEach(ms -> {
             MetaObject mo = config.newMetaObject(ms);
 
@@ -163,8 +164,9 @@ public class PagerInterceptor implements Interceptor, ApplicationListener<Contex
             String afterSql = parseSql(beforeSql, ms.getId());
             mo.setValue("sqlSource.sqlSource.sql", afterSql);
 
-            @SuppressWarnings("unchecked") List<ParameterMapping> beforePmList = (List<ParameterMapping>) mo.getValue("sqlSource.sqlSource.parameterMappings");
-            // 这里把原始的pmList保存起来，count的时会用到
+            @SuppressWarnings("unchecked")
+            List<ParameterMapping> beforePmList = (List<ParameterMapping>) mo.getValue("sqlSource.sqlSource.parameterMappings");
+            // 这里把原始的pmList保存起来，count时会用到
             pagerContainer.get(ms.getId()).setOriginPmList(beforePmList);
             List<ParameterMapping> afterPmList = parseParameterMappings(config, ms.getId(), beforePmList);
             mo.setValue("sqlSource.sqlSource.parameterMappings", afterPmList);
@@ -204,7 +206,7 @@ public class PagerInterceptor implements Interceptor, ApplicationListener<Contex
             sql = "SELECT " + columns + FROM + from + where;
             container.setCount("SELECT COUNT(*) " + COUNT_NAME + " FROM (" + sql + ") _$_t");
             String orderBy = ofNullable(body.getOrderByElements()).orElseGet(ArrayList::new).stream().map(Objects::toString).collect(joining(", "));
-            orderBy = StringUtils.isNoneBlank(orderBy) ? (" ORDER BY " + orderBy) : "";
+            orderBy = StringUtils.isNotBlank(orderBy) ? (" ORDER BY " + orderBy) : "";
 
             afterSql = sql + orderBy + " LIMIT ?, ?";
             container.setSingleTable(true);

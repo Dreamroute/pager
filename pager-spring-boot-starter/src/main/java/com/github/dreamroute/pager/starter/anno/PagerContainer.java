@@ -13,7 +13,7 @@ public class PagerContainer {
 
     public static final String ID ="id";
 
-    private String distinctBy;
+    private String distinctBy = ID;
     private String count;
     private boolean singleTable;
     private List<ParameterMapping> originPmList;
