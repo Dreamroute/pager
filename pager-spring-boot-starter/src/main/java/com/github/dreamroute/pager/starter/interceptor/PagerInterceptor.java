@@ -58,8 +58,7 @@ import static org.apache.commons.lang3.StringUtils.isNotBlank;
  */
 @Intercepts({
         @Signature(type = Executor.class, method = "query", args = {MappedStatement.class, Object.class, RowBounds.class, ResultHandler.class}),
-        @Signature(type = Executor.class, method = "query", args = {MappedStatement.class, Object.class, RowBounds.class, ResultHandler.class, CacheKey.class, BoundSql.class}),
-        @Signature(type = ParameterHandler.class, method = "setParameters", args = {PreparedStatement.class})
+        @Signature(type = Executor.class, method = "query", args = {MappedStatement.class, Object.class, RowBounds.class, ResultHandler.class, CacheKey.class, BoundSql.class})
 })
 public class PagerInterceptor implements Interceptor, ApplicationListener<ContextRefreshedEvent> {
 
