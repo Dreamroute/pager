@@ -17,7 +17,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import javax.sql.DataSource;
-import java.util.List;
 
 import static com.github.dreamroute.pager.starter.api.Pager.page;
 import static com.ninja_squad.dbsetup.Operations.insertInto;
@@ -130,12 +129,6 @@ class UserMapperTest {
 
         PageResponse<SelectFromThreeTablesResp> result = page(request, userMapper::selectFromThreeTables);
         System.err.println(result);
-    }
-
-    @Test
-    void findByNameTest() {
-        List<User> users = userMapper.findByName("w.dehai");
-        System.err.println(users);
     }
 
 }

@@ -15,7 +15,7 @@
 
     <properties>
         <!-- 版本信息 -->
-        <revision>2.3-RELEASE</revision>
+        <revision>2.1-RELEASE</revision>
 
         <!-- 编码相关 -->
         <java.version>1.8</java.version>
@@ -78,16 +78,10 @@
         </dependency>
     </dependencies>
 
-<!--    <distributionManagement>
+    <distributionManagement>
         <repository>
             <id>ossrh</id>
             <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-        </repository>
-    </distributionManagement>-->
-    <distributionManagement>
-        <repository>
-            <id>jc</id>
-            <url>http://nexus.yzw.cn/repository/jc/</url>
         </repository>
     </distributionManagement>
 
@@ -123,7 +117,7 @@
                 </executions>
             </plugin>
 
- <!--           <plugin>
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
                 <configuration>
@@ -158,7 +152,7 @@
                         </goals>
                     </execution>
                 </executions>
-            </plugin>-->
+            </plugin>
 
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
