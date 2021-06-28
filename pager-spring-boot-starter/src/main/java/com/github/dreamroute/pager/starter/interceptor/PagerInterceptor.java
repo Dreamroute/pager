@@ -72,7 +72,9 @@ public class PagerInterceptor implements Interceptor, ApplicationListener<Contex
 
     private Configuration config;
 
-    @Override
+    /**
+     * Spring启动完毕之后，就将需要分页的Mapper抽取出来，存入缓存
+     */
     public void onApplicationEvent(ContextRefreshedEvent event) {
         SqlSessionFactory sqlSessionFactory = event.getApplicationContext().getBean(SqlSessionFactory.class);
         config = sqlSessionFactory.getConfiguration();
