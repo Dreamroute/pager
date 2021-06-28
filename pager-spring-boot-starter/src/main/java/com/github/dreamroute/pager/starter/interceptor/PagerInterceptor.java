@@ -13,6 +13,7 @@ import net.sf.jsqlparser.util.TablesNamesFinder;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.cache.CacheKey;
 import org.apache.ibatis.executor.Executor;
+import org.apache.ibatis.executor.parameter.ParameterHandler;
 import org.apache.ibatis.executor.statement.StatementHandler;
 import org.apache.ibatis.mapping.BoundSql;
 import org.apache.ibatis.mapping.MappedStatement;
@@ -31,6 +32,9 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.util.CollectionUtils;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
@@ -95,12 +99,27 @@ public class PagerInterceptor implements Interceptor, ApplicationListener<Contex
 
         Executor executor = (Executor) (getOriginObj(invocation.getTarget()));
         Transaction transaction = executor.getTransaction();
+
+        Connection conn = transaction.getConnection();
         String count = pc.getCountSql();
+        PreparedStatement ps = conn.prepareStatement(count);
         BoundSql countBoundSql = new BoundSql(config, count, pc.getOriginPmList(), param);
-        StatementHandler handler = config.newStatementHandler(executor, ms, param, RowBounds.DEFAULT, null, countBoundSql);
-        Statement stmt = prepareStatement(transaction, handler);
-        List<Object> query = handler.query(stmt, null);
-        System.err.println(query);
+        ParameterHandler parameterHandler = config.newParameterHandler(ms, param, countBoundSql);
+        parameterHandler.setParameters(ps);
+        ResultSet rs = ps.executeQuery();
+        PageContainer<Object> container = new PageContainer<>();
+        while (rs.next()) {
+            long totle = rs.getLong(COUNT_NAME);
+            container.setTotal(totle);
+        }
+        ps.close();
+
+//        String count = pc.getCountSql();
+//        BoundSql countBoundSql = new BoundSql(config, count, pc.getOriginPmList(), param);
+//        StatementHandler handler = config.newStatementHandler(executor, ms, param, RowBounds.DEFAULT, null, countBoundSql);
+//        Statement stmt = prepareStatement(transaction, handler);
+//        List<Object> query = handler.query(stmt, null);
+//        System.err.println(query);
 
 //        ParameterHandler parameterHandler = config.newParameterHandler(ms, param, countBoundSql);
 //        PageContainer<Object> container = new PageContainer<>();
