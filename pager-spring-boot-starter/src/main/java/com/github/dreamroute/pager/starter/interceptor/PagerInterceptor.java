@@ -13,7 +13,6 @@ import net.sf.jsqlparser.util.TablesNamesFinder;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.cache.CacheKey;
 import org.apache.ibatis.executor.Executor;
-import org.apache.ibatis.executor.parameter.ParameterHandler;
 import org.apache.ibatis.executor.statement.StatementHandler;
 import org.apache.ibatis.mapping.BoundSql;
 import org.apache.ibatis.mapping.MappedStatement;
@@ -22,7 +21,6 @@ import org.apache.ibatis.plugin.Interceptor;
 import org.apache.ibatis.plugin.Intercepts;
 import org.apache.ibatis.plugin.Invocation;
 import org.apache.ibatis.plugin.Signature;
-import org.apache.ibatis.reflection.MetaObject;
 import org.apache.ibatis.session.Configuration;
 import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.RowBounds;
@@ -32,7 +30,6 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.util.CollectionUtils;
 
-import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -54,8 +51,8 @@ import static org.apache.commons.lang3.StringUtils.isNotBlank;
 /**
  * 分页插件，原理：通过注解标注需要分页的接口方法，拦截该方法，抽取原生sql，然后做3个动作：
  * 1、根据原生sql语句生成一个统计的sql，并且执行查询，获得统计结果；
- * 2、改写原生sql，加上分页参数，执行查询操作；
- * 3、将统计信息和分页结果合并成返回信息；
+ * 2、改写原生sql，加上分页参数，执行查询操作，获取查询结果；
+ * 3、将上述两个结果封装成分页结果；
  *
  * @author w.dehi
  */
@@ -67,9 +64,7 @@ public class PagerInterceptor implements Interceptor, ApplicationListener<Contex
 
     private final ConcurrentHashMap<String, PagerContainer> pagerContainer = new ConcurrentHashMap<>();
 
-    /**
-     * 单表
-     */
+    // 单表
     private static final int SINGLE = 1;
     private static final String COUNT_NAME = "_$count$_";
     private static final String WHERE = " WHERE ";
@@ -80,102 +75,7 @@ public class PagerInterceptor implements Interceptor, ApplicationListener<Contex
     @Override
     public void onApplicationEvent(ContextRefreshedEvent event) {
         SqlSessionFactory sqlSessionFactory = event.getApplicationContext().getBean(SqlSessionFactory.class);
-        // 将此方法移动到Spring容器初始化之后执行的原因是：如果放在下方的intercept方法中来执行，
-        // 那么就会有并发问题（获取ms的sqlSource然后修改sqlSource），那么就需要对该方法加锁，影响性能
         config = sqlSessionFactory.getConfiguration();
-        parsePagerContainer();
-    }
-
-    @Override
-    public Object intercept(Invocation invocation) throws Throwable {
-        Object[] args = invocation.getArgs();
-        MappedStatement ms = (MappedStatement) args[0];
-        Object param = args[1];
-        PagerContainer pc = pagerContainer.get(ms.getId());
-        // 拦截请求的条件：1. @Page标记接口，2.参数是：PageRequest
-        if (pc == null || !(param instanceof PageRequest)) {
-            return invocation.proceed();
-        }
-
-        Executor executor = (Executor) (getOriginObj(invocation.getTarget()));
-        Transaction transaction = executor.getTransaction();
-
-        Connection conn = transaction.getConnection();
-        String count = pc.getCountSql();
-        PreparedStatement ps = conn.prepareStatement(count);
-        BoundSql countBoundSql = new BoundSql(config, count, pc.getOriginPmList(), param);
-        ParameterHandler parameterHandler = config.newParameterHandler(ms, param, countBoundSql);
-        parameterHandler.setParameters(ps);
-        ResultSet rs = ps.executeQuery();
-        PageContainer<Object> container = new PageContainer<>();
-        while (rs.next()) {
-            long totle = rs.getLong(COUNT_NAME);
-            container.setTotal(totle);
-        }
-        ps.close();
-
-//        String count = pc.getCountSql();
-//        BoundSql countBoundSql = new BoundSql(config, count, pc.getOriginPmList(), param);
-//        StatementHandler handler = config.newStatementHandler(executor, ms, param, RowBounds.DEFAULT, null, countBoundSql);
-//        Statement stmt = prepareStatement(transaction, handler);
-//        List<Object> query = handler.query(stmt, null);
-//        System.err.println(query);
-
-//        ParameterHandler parameterHandler = config.newParameterHandler(ms, param, countBoundSql);
-//        PageContainer<Object> container = new PageContainer<>();
-//        while (rs.next()) {
-//            long totle = rs.getLong(COUNT_NAME);
-//            container.setTotal(totle);
-//        }
-//        ps.close();
-
-        PageRequest<?> pr = (PageRequest<?>) param;
-        int pageNum = pr.getPageNum();
-        int pageSize = pr.getPageSize();
-
-        // 由于不希望在pageRequest中增加start参数，所以limit时改变pageNum来代替start，因此resp的pageNum需要在设置start之前进行设置
-//        container.setPageNum(pageNum);
-//        container.setPageSize(pr.getPageSize());
-//
-//        int start = (pageNum - 1) * pageSize;
-//        pr.setPageNum(start);
-//
-//        if (container.getTotal() != 0) {
-//            PreparedStatement preparedStatement = conn.prepareStatement(pc.getAfterSql());
-//            BoundSql bs = new BoundSql(config, pc.getAfterSql(), pc.getAfterPmList(), param);
-//            ParameterHandler ph = config.newParameterHandler(ms, param, bs);
-//            ph.setParameters(preparedStatement);
-//            ResultSet r = preparedStatement.executeQuery();
-//            while (r.next()) {
-//                System.err.println(r);
-//            }
-//            preparedStatement.close();
-//
-//            Object result = invocation.proceed();
-//            List<?> ls = (List<?>) result;
-//            container.addAll(ls);
-//        }
-
-//        return container;
-        return null;
-    }
-
-    private Statement prepareStatement(Transaction transaction, StatementHandler handler) throws SQLException {
-        Statement stmt;
-        stmt = handler.prepare(transaction.getConnection(), transaction.getTimeout());
-        handler.parameterize(stmt);
-        return stmt;
-    }
-
-    /**
-     * 这里将pagerContainer进行缓存，由于分页插件的执行sql是固定的，所以可以缓存
-     */
-    private void parsePagerContainer() {
-        parseAnno();
-        updateSqlSource();
-    }
-
-    private void parseAnno() {
         Collection<Class<?>> mappers = config.getMapperRegistry().getMappers();
         if (mappers != null && !mappers.isEmpty()) {
             for (Class<?> mapper : mappers) {
@@ -192,20 +92,76 @@ public class PagerInterceptor implements Interceptor, ApplicationListener<Contex
         }
     }
 
-    private void updateSqlSource() {
-        this.pagerContainer.keySet().stream().map(config::getMappedStatement).forEach(ms -> {
-            PagerContainer pc = this.pagerContainer.get(ms.getId());
-            MetaObject mo = config.newMetaObject(ms);
-            String beforeSql = (String) mo.getValue("sqlSource.sqlSource.sql");
+    @Override
+    public Object intercept(Invocation invocation) throws Throwable {
+        MappedStatement ms = (MappedStatement) invocation.getArgs()[0];
+        Object param = invocation.getArgs()[1];
+        PagerContainer pc = pagerContainer.get(ms.getId());
+
+        // 拦截请求的条件：1. @Page标记接口，2.参数是：PageRequest
+        if (pc == null || !(param instanceof PageRequest)) {
+            return invocation.proceed();
+        }
+
+        // 这里即使存在并发写入，也是幂等的，因为不涉及状态的更改
+        if (!pc.isInit()) {
+            BoundSql boundSql = ms.getBoundSql(param);
+            String beforeSql = boundSql.getSql();
             String afterSql = parseSql(beforeSql, ms.getId());
             pc.setAfterSql(afterSql);
-            @SuppressWarnings("unchecked")
-            List<ParameterMapping> beforePmList = (List<ParameterMapping>) mo.getValue("sqlSource.sqlSource.parameterMappings");
+            List<ParameterMapping> beforePmList = boundSql.getParameterMappings();
             pc.setOriginPmList(beforePmList);
             List<ParameterMapping> afterPmList = parseParameterMappings(config, ms.getId(), beforePmList);
             pc.setAfterPmList(afterPmList);
-        });
+            pc.setInit(true);
+        }
 
+        Executor executor = (Executor) (getOriginObj(invocation.getTarget()));
+        Transaction transaction = executor.getTransaction();
+
+        // 处理统计信息
+        BoundSql countBoundSql = new BoundSql(config, pc.getCountSql(), pc.getOriginPmList(), param);
+        StatementHandler countHandler = config.newStatementHandler(executor, ms, param, RowBounds.DEFAULT, null, countBoundSql);
+        Statement countStmt = prepareStatement(transaction, countHandler);
+        ((PreparedStatement) countStmt).execute();
+        ResultSet rs = countStmt.getResultSet();
+        PageContainer<Object> container = new PageContainer<>();
+        while (rs.next()) {
+            long totle = rs.getLong(COUNT_NAME);
+            container.setTotal(totle);
+        }
+        countStmt.close();
+
+        // 由于不希望在pageRequest中增加start参数，复用pageNum, limit ?, ?的第一个参数pageNum的值使用start，因此resp的pageNum需要在设置start之前进行设置
+        PageRequest<?> pr = (PageRequest<?>) param;
+        int pageNum = pr.getPageNum();
+        int pageSize = pr.getPageSize();
+        container.setPageNum(pageNum);
+        container.setPageSize(pageSize);
+        int start = (pageNum - 1) * pageSize;
+        pr.setPageNum(start);
+
+        // 处理业务查询
+        if (container.getTotal() != 0L) {
+            BoundSql bizBoundSql = new BoundSql(config, pc.getAfterSql(), pc.getAfterPmList(), param);
+            StatementHandler bizHandler = config.newStatementHandler(executor, ms, param, RowBounds.DEFAULT, null, bizBoundSql);
+            Statement bizStmt = prepareStatement(transaction, bizHandler);
+            List<Object> data = bizHandler.query(bizStmt, null);
+            bizStmt.close();
+            container.addAll(data);
+        }
+
+        // 恢复
+        pr.setPageNum(pageNum);
+
+        return container;
+    }
+
+    private Statement prepareStatement(Transaction transaction, StatementHandler handler) throws SQLException {
+        Statement stmt;
+        stmt = handler.prepare(transaction.getConnection(), transaction.getTimeout());
+        handler.parameterize(stmt);
+        return stmt;
     }
 
     private List<ParameterMapping> parseParameterMappings(Configuration config, String id, List<ParameterMapping> pmList) {
@@ -281,5 +237,4 @@ public class PagerInterceptor implements Interceptor, ApplicationListener<Contex
         }
         return afterSql;
     }
-
 }

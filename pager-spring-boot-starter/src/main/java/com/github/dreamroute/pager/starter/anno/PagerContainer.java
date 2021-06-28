@@ -13,6 +13,7 @@ public class PagerContainer {
 
     public static final String ID ="id";
 
+    private boolean init;
     private String distinctBy = ID;
     private String countSql;
     private boolean singleTable;

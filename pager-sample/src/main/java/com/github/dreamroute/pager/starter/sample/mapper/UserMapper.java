@@ -23,8 +23,6 @@ public interface UserMapper extends BaseMapper<User, Long> {
     @Pager(distinctBy = "u.id")
     List<SelectFromThreeTablesResp> selectFromThreeTables(PageRequest<SelectFromThreeTables> request);
 
-    List<User> findByName(String name);
-
     @Pager
     @Select("select * from smart_user")
     List<User> selectPage(PageRequest<Object> request);
