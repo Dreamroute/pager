@@ -127,7 +127,7 @@ public class PagerInterceptor implements Interceptor, ApplicationListener<Contex
         Statement countStmt = prepareStatement(transaction, countHandler);
         ((PreparedStatement) countStmt).execute();
         ResultSet rs = countStmt.getResultSet();
-        PageContainer<Object> container = new PageContainer<>();
+        ResultWrapper<Object> container = new ResultWrapper<>();
         while (rs.next()) {
             long totle = rs.getLong(COUNT_NAME);
             container.setTotal(totle);

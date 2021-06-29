@@ -10,7 +10,7 @@ import java.util.ArrayList;
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
-public class PageContainer<E> extends ArrayList<E> {
+public class ResultWrapper<E> extends ArrayList<E> {
     private long total;
     private int pageNum;
     private int pageSize;
