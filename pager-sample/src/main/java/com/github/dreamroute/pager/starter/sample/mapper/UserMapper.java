@@ -7,6 +7,7 @@ import com.github.dreamroute.pager.starter.sample.dto.SelectFromThreeTables;
 import com.github.dreamroute.pager.starter.sample.dto.SelectFromThreeTablesResp;
 import com.github.dreamroute.pager.starter.sample.dto.SelectFromTwoTables;
 import com.github.dreamroute.pager.starter.sample.dto.SelectFromTwoTablesResp;
+import com.github.dreamroute.pager.starter.sample.dto.SelectUseInCondition;
 import com.github.dreamroute.pager.starter.sample.entity.User;
 import org.apache.ibatis.annotations.Select;
 
@@ -26,4 +27,7 @@ public interface UserMapper extends BaseMapper<User, Long> {
     @Pager
     @Select("select * from smart_user")
     List<User> selectPage(PageRequest<Object> request);
+
+    @Pager
+    List<User> selectUseInCondition(PageRequest<SelectUseInCondition> tPageRequest);
 }

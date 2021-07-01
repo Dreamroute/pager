@@ -39,4 +39,11 @@
         </collection>
     </resultMap>
 
+    <select id="selectUseInCondition" parameterType="com.github.dreamroute.pager.starter.sample.dto.SelectUseInCondition" resultType="com.github.dreamroute.pager.starter.sample.entity.User">
+        select * from smart_user where name in
+        <foreach collection="#{param.names}" item="name" index="index" open="(" close=")" separator=",">
+            #{name}
+        </foreach>
+    </select>
+
 </mapper>

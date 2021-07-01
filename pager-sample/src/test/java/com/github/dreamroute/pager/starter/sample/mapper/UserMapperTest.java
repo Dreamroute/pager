@@ -7,6 +7,7 @@ import com.github.dreamroute.pager.starter.sample.dto.SelectFromThreeTables;
 import com.github.dreamroute.pager.starter.sample.dto.SelectFromThreeTablesResp;
 import com.github.dreamroute.pager.starter.sample.dto.SelectFromTwoTables;
 import com.github.dreamroute.pager.starter.sample.dto.SelectFromTwoTablesResp;
+import com.github.dreamroute.pager.starter.sample.dto.SelectUseInCondition;
 import com.github.dreamroute.pager.starter.sample.entity.User;
 import com.ninja_squad.dbsetup.DbSetup;
 import com.ninja_squad.dbsetup.destination.DataSourceDestination;
@@ -19,6 +20,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import javax.sql.DataSource;
 
 import static com.github.dreamroute.pager.starter.api.Pager.page;
+import static com.google.common.collect.Lists.newArrayList;
 import static com.ninja_squad.dbsetup.Operations.insertInto;
 import static com.ninja_squad.dbsetup.Operations.truncate;
 
@@ -83,6 +85,21 @@ class UserMapperTest {
         request.setParam(user);
 
         PageResponse<User> result = Pager.page(request, userMapper::selectOneTable);
+        System.err.println(result);
+    }
+
+    @Test
+    void selectUseInConditionTest() {
+        PageRequest<SelectUseInCondition> request = new PageRequest<>();
+        request.setPageNum(1);
+        request.setPageSize(2);
+
+        SelectUseInCondition suc = new SelectUseInCondition();
+        suc.setPageNum(1);
+        suc.setPageSize(2);
+        suc.setNames(newArrayList("w.dehai", "Dreamroute"));
+
+        PageResponse<User> result = Pager.page(request, userMapper::selectUseInCondition);
         System.err.println(result);
     }
 
