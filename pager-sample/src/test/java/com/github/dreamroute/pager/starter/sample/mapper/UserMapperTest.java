@@ -3,6 +3,7 @@ package com.github.dreamroute.pager.starter.sample.mapper;
 import com.github.dreamroute.pager.starter.api.PageRequest;
 import com.github.dreamroute.pager.starter.api.PageResponse;
 import com.github.dreamroute.pager.starter.api.Pager;
+import com.github.dreamroute.pager.starter.sample.dto.SelectFromOneTable;
 import com.github.dreamroute.pager.starter.sample.dto.SelectFromThreeTables;
 import com.github.dreamroute.pager.starter.sample.dto.SelectFromThreeTablesResp;
 import com.github.dreamroute.pager.starter.sample.dto.SelectFromTwoTables;
@@ -67,7 +68,7 @@ class UserMapperTest {
 
     @Test
     void selectPageTest() {
-        PageRequest<Object> request = new PageRequest<>();
+        PageRequest request = new PageRequest();
         request.setPageNum(1);
         request.setPageSize(2);
         PageResponse<User> page = page(request, userMapper::selectPage);
@@ -75,75 +76,56 @@ class UserMapperTest {
     }
 
     @Test
-    void selectOneTableTest() {
-        PageRequest<User> request = new PageRequest<>();
+    void selectFromOneTableTest() {
+        SelectFromOneTable request = new SelectFromOneTable();
         request.setPageNum(1);
         request.setPageSize(2);
-
-        User user = new User();
-        user.setName("w.dehai");
-        request.setParam(user);
-
-        PageResponse<User> result = Pager.page(request, userMapper::selectOneTable);
+        request.setName("w.dehai");
+        PageResponse<User> result = Pager.page(request, userMapper::selectFromOneTable);
         System.err.println(result);
     }
 
     @Test
     void selectUseInConditionTest() {
-        PageRequest<SelectUseInCondition> request = new PageRequest<>();
-        request.setPageNum(1);
-        request.setPageSize(2);
 
         SelectUseInCondition suc = new SelectUseInCondition();
         suc.setPageNum(1);
         suc.setPageSize(2);
         suc.setNames(newArrayList("w.dehai", "Dreamroute"));
 
-        PageResponse<User> result = Pager.page(request, userMapper::selectUseInCondition);
+        PageResponse<User> result = Pager.page(suc, userMapper::selectUseInCondition);
         System.err.println(result);
     }
 
     @Test
-    void selectOneTableNoResultTest() {
-        PageRequest<User> request = new PageRequest<>();
+    void selectFromOneTableNoResultTest() {
+        SelectFromOneTable request = new SelectFromOneTable();
         request.setPageNum(1);
         request.setPageSize(2);
-
-        User user = new User();
-        user.setName("~~");
-        request.setParam(user);
-
-        PageResponse<User> result = Pager.page(request, userMapper::selectOneTable);
+        request.setName("~~");
+        PageResponse<User> result = Pager.page(request, userMapper::selectFromOneTable);
         System.err.println(result);
     }
 
     @Test
     void selectFromTwoTablesTest() {
-        PageRequest<SelectFromTwoTables> request = new PageRequest<>();
-        request.setPageNum(1);
-        request.setPageSize(2);
-
         SelectFromTwoTables param = new SelectFromTwoTables();
+        param.setPageNum(1);
+        param.setPageSize(2);
         param.setName("w.dehai");
         param.setUserId(1L);
-        request.setParam(param);
-
-        PageResponse<SelectFromTwoTablesResp> result = Pager.page(request, userMapper::selectFromTwoTables);
+        PageResponse<SelectFromTwoTablesResp> result = Pager.page(param, userMapper::selectFromTwoTables);
         System.err.println(result);
     }
 
     @Test
     void selectFromThreeTablesTest() {
-        PageRequest<SelectFromThreeTables> request = new PageRequest<>();
+        SelectFromThreeTables request = new SelectFromThreeTables();
         request.setPageNum(1);
         request.setPageSize(2);
-
-        SelectFromThreeTables param = new SelectFromThreeTables();
-        param.setName("w.dehai");
-        param.setUserId(1L);
-        param.setCityName("成都");
-        request.setParam(param);
-
+        request.setName("w.dehai");
+        request.setUserId(1L);
+        request.setCityName("成都");
         PageResponse<SelectFromThreeTablesResp> result = page(request, userMapper::selectFromThreeTables);
         System.err.println(result);
     }

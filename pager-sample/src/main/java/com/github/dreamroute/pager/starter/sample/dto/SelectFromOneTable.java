@@ -4,9 +4,11 @@ import com.github.dreamroute.pager.starter.api.PageRequest;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+/**
+ * @author w.dehai.2021/7/2.17:11
+ */
 @Data
 @EqualsAndHashCode(callSuper = true)
-public class SelectFromTwoTables extends PageRequest {
+public class SelectFromOneTable extends PageRequest {
     private String name;
-    private Long userId;
 }

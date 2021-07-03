@@ -1,12 +1,7 @@
 package com.github.dreamroute.pager.starter.api;
 
-import com.google.errorprone.annotations.NoAllocation;
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.experimental.SuperBuilder;
 
-import javax.validation.Valid;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
@@ -18,10 +13,7 @@ import java.io.Serializable;
  * @author w.dehai
  */
 @Data
-@SuperBuilder
-@AllArgsConstructor
-@NoArgsConstructor
-public class PageRequest<E> implements Serializable {
+public class PageRequest implements Serializable {
 
     /** 分页信息 **/
     @Min(1)
@@ -32,9 +24,5 @@ public class PageRequest<E> implements Serializable {
     @NotNull
     @Max(Integer.MAX_VALUE)
     private int pageSize = 10;
-
-    /** 请求参数对象 **/
-    @Valid
-    private E param;
 
 }

@@ -29,15 +29,15 @@
 
 * 当mybatis执行到此sql时，插件内部会拦截此sql（用户无需关心插件做了什么），做如下事情：
 
-  * 插件会根据此sql生成统计sql，并且执行统计查询
+    * 插件会根据此sql生成统计sql，并且执行统计查询
 
-  * 如果统计sql的查询结果不为0，那么改写原始sql语句，加入分页pageNum和pageSize，类似这样：
+    * 如果统计sql的查询结果不为0，那么改写原始sql语句，加入分页pageNum和pageSize，类似这样：
 
-    ```xml
-    select * from user where name like concat('%', ? ,'%') limit ?, ?
-    ```
+      ```
+      select * from user where name like concat('%', ? ,'%') limit ?, ?
+      ```
 
-  * 将统计结果和分页数据进行组装，返回给调用方
+    * 将统计结果和分页数据进行组装，返回给调用方
 
 #### 项目中引入插件
 * 引入依赖
@@ -84,13 +84,13 @@
       private String name;
   }
   ```
-  
+
 * 编写原始查询sql
 
   ```
   select * from user where name like concat('%',#{name},'%')
   ```
-  
+
 * 设置`@Pager`的属性`distinctBy`，关联查询需要设置
 
   > 1、@Pager的属性，distinctBy（默认是"id"），用在多表查询的主表去重，否则1对多，多对多的查询会出现分页不准确问题，一般来说是主表别名+主键字段，如：
@@ -99,22 +99,22 @@
   > 那么@Pager(distinctBy = u.id)
   >
   > 2、如果你的系统中的主键都是使用`id`这个名字，那么`单表`可以不用设置
-  
+
 * 构造查询参数：
 
-  ```java
+  ```
   UserReq request = new UserReq();
   request.setPageNum(1);
   request.setPageSize(2);
   request.setName("xxx");
   ```
-  
+
 * 执行查询
 
-  ```java
+  ```
   PageResponse<User> result = Pager.page(request, userMapper::listUsers);
   ```
-  
+
 * 大功告成
 
   > 说明：你无需编写统计SQL语句，也无需关心多表联查数据分页不准确的问题，统统插件帮你完成
@@ -219,7 +219,9 @@ WHERE
 
 #### 若干demo举例
 
-> 参考本项目的pager-sample模块里面的`UserMapperTest`这个类下的单元测试，包含了各种场景的分页查询
+> 1、参考本项目的pager-sample模块里面的`UserMapperTest`这个类下的单元测试，包含了各种场景的分页查询
+>
+> 2、默认是H2数据库，项目clone下来直接就可以运行单元测试，如果想使用mysql则需要创建下面的表
 
 #### 建表：
 ```
@@ -262,4 +264,3 @@ CREATE TABLE `backup_table`
     `data`       varchar(2000) default null
 );
 ```
-

@@ -41,11 +41,13 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static com.github.dreamroute.pager.starter.anno.PagerContainer.ID;
 import static com.github.dreamroute.pager.starter.interceptor.ProxyUtil.getOriginObj;
 import static java.util.Arrays.stream;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toSet;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 /**
@@ -135,7 +137,7 @@ public class PagerInterceptor implements Interceptor, ApplicationListener<Contex
         countStmt.close();
 
         // 由于不希望在pageRequest中增加start参数，复用pageNum, limit ?, ?的第一个参数pageNum的值使用start，因此resp的pageNum需要在设置start之前进行设置
-        PageRequest<?> pr = (PageRequest<?>) param;
+        PageRequest pr = (PageRequest) param;
         int pageNum = pr.getPageNum();
         int pageSize = pr.getPageSize();
         container.setPageNum(pageNum);
@@ -199,7 +201,6 @@ public class PagerInterceptor implements Interceptor, ApplicationListener<Contex
             container.setCountSql("SELECT COUNT(*) " + COUNT_NAME + " FROM (" + sql + ") _$_t");
             String orderBy = ofNullable(body.getOrderByElements()).orElseGet(ArrayList::new).stream().map(Objects::toString).collect(joining(", "));
             orderBy = StringUtils.isNotBlank(orderBy) ? (" ORDER BY " + orderBy) : "";
-
             afterSql = sql + orderBy + " LIMIT ?, ?";
             container.setSingleTable(true);
         } else {
@@ -207,6 +208,9 @@ public class PagerInterceptor implements Interceptor, ApplicationListener<Contex
 
             String alias = "";
             String distinctBy = container.getDistinctBy();
+            if (isEmpty(distinctBy) || Objects.equals(ID, distinctBy)) {
+                throw new PaggerException("多表查询需要设置@Pager的主表distinctBy属性, 设置方式参考插件的文档distinctBy设置方法。sql: " + select.toString());
+            }
             if (distinctBy.indexOf('.') != -1) {
                 alias = distinctBy.split("\\.")[0];
             }

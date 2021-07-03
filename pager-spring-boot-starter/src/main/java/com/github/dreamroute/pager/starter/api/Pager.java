@@ -2,6 +2,7 @@ package com.github.dreamroute.pager.starter.api;
 
 import com.github.dreamroute.pager.starter.interceptor.ResultWrapper;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
@@ -19,14 +20,14 @@ public class Pager {
     /**
      * 调用此方法，就能获取到分页信息
      *
-     * @param pageRequest 分页请求
+     * @param request 分页请求
      * @param query 分页mapper方法
      * @param <T> 分页请求参数类型
      * @param <R> 分页mapper的返回值类型
      * @return 返回此次查询的分页信息
      */
-    public static <T, R> PageResponse<R> page(PageRequest<T> pageRequest, Function<PageRequest<T>, List<R>> query) {
-        ResultWrapper<R> resp = (ResultWrapper<R>) query.apply(pageRequest);
+    public static <T extends PageRequest, R> PageResponse<R> page(T request, Function<T, List<R>> query) {
+        ResultWrapper<R> resp = (ResultWrapper<R>) query.apply(request);
         PageResponse<R> result = new PageResponse<>();
         List<R> data = new ArrayList<>(ofNullable(resp).orElseGet(ResultWrapper::new));
         result.setList(data);
