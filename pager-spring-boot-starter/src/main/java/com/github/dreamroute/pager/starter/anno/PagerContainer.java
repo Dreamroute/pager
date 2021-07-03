@@ -14,7 +14,7 @@ public class PagerContainer {
     public static final String ID ="id";
 
     private boolean init;
-    private String distinctBy = ID;
+    private String distinctBy;
     private String countSql;
     private boolean singleTable;
     private String afterSql;
