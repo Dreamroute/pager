@@ -19,7 +19,7 @@ public interface UserMapper extends BaseMapper<User, Long> {
     @Pager
     List<User> selectFromOneTable(SelectFromOneTable request);
 
-//    @Pager(distinctBy = "u.id")
+    @Pager(distinctBy = "u.id")
     List<SelectFromTwoTablesResp> selectFromTwoTables(SelectFromTwoTables request);
 
     @Pager(distinctBy = "u.id")
