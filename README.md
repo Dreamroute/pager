@@ -219,7 +219,9 @@ WHERE
 
 #### 若干demo举例
 
-> 参考本项目的pager-sample模块里面的`UserMapperTest`这个类下的单元测试，包含了各种场景的分页查询
+> 1、参考本项目的pager-sample模块里面的`UserMapperTest`这个类下的单元测试，包含了各种场景的分页查询
+>
+> 2、默认是H2数据库，项目clone下来直接就可以运行单元测试，如果想使用mysql则需要创建下面的表
 
 #### 建表：
 ```
@@ -262,4 +264,3 @@ CREATE TABLE `backup_table`
     `data`       varchar(2000) default null
 );
 ```
-
