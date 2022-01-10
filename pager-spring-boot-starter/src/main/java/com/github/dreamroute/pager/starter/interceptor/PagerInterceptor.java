@@ -11,12 +11,15 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.util.TablesNamesFinder;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.ibatis.builder.StaticSqlSource;
 import org.apache.ibatis.cache.CacheKey;
 import org.apache.ibatis.executor.Executor;
 import org.apache.ibatis.executor.statement.StatementHandler;
 import org.apache.ibatis.mapping.BoundSql;
 import org.apache.ibatis.mapping.MappedStatement;
+import org.apache.ibatis.mapping.MappedStatement.Builder;
 import org.apache.ibatis.mapping.ParameterMapping;
+import org.apache.ibatis.mapping.SqlCommandType;
 import org.apache.ibatis.plugin.Interceptor;
 import org.apache.ibatis.plugin.Intercepts;
 import org.apache.ibatis.plugin.Invocation;
@@ -125,7 +128,8 @@ public class PagerInterceptor implements Interceptor, ApplicationListener<Contex
 
         // 处理统计信息
         BoundSql countBoundSql = new BoundSql(config, pc.getCountSql(), pc.getOriginPmList(), param);
-        StatementHandler countHandler = config.newStatementHandler(executor, ms, param, RowBounds.DEFAULT, null, countBoundSql);
+        MappedStatement m = new Builder(config, "select.count._inner_id", new StaticSqlSource(config, pc.getCountSql()), SqlCommandType.SELECT).build();
+        StatementHandler countHandler = config.newStatementHandler(executor, m, param, RowBounds.DEFAULT, null, countBoundSql);
         Statement countStmt = prepareStatement(transaction, countHandler);
         ((PreparedStatement) countStmt).execute();
         ResultSet rs = countStmt.getResultSet();
