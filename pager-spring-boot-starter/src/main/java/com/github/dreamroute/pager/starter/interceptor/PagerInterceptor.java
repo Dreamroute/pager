@@ -128,7 +128,7 @@ public class PagerInterceptor implements Interceptor, ApplicationListener<Contex
 
         // 处理统计信息
         BoundSql countBoundSql = new BoundSql(config, pc.getCountSql(), pc.getOriginPmList(), param);
-        MappedStatement m = new Builder(config, "select.count._inner_id", new StaticSqlSource(config, pc.getCountSql()), SqlCommandType.SELECT).build();
+        MappedStatement m = new Builder(config, "com.[plugin]pager_count._inner_select", new StaticSqlSource(config, pc.getCountSql()), SqlCommandType.SELECT).build();
         StatementHandler countHandler = config.newStatementHandler(executor, m, param, RowBounds.DEFAULT, null, countBoundSql);
         Statement countStmt = prepareStatement(transaction, countHandler);
         ((PreparedStatement) countStmt).execute();
