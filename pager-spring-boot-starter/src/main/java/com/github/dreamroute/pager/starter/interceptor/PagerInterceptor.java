@@ -24,6 +24,7 @@ import org.apache.ibatis.plugin.Interceptor;
 import org.apache.ibatis.plugin.Intercepts;
 import org.apache.ibatis.plugin.Invocation;
 import org.apache.ibatis.plugin.Signature;
+import org.apache.ibatis.reflection.MetaObject;
 import org.apache.ibatis.session.Configuration;
 import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.RowBounds;
@@ -111,8 +112,8 @@ public class PagerInterceptor implements Interceptor, ApplicationListener<Contex
         }
 
         // 这里即使存在并发写入，也是幂等的，因为不涉及状态的更改
+        BoundSql boundSql = ms.getBoundSql(param);
         if (!pc.isInit()) {
-            BoundSql boundSql = ms.getBoundSql(param);
             String beforeSql = boundSql.getSql();
             String afterSql = parseSql(beforeSql, ms.getId());
             pc.setAfterSql(afterSql);
@@ -128,6 +129,7 @@ public class PagerInterceptor implements Interceptor, ApplicationListener<Contex
 
         // 处理统计信息
         BoundSql countBoundSql = new BoundSql(config, pc.getCountSql(), pc.getOriginPmList(), param);
+        copyProps(boundSql, countBoundSql, config);
         MappedStatement m = new Builder(config, "com.[plugin]pager_count._inner_select", new StaticSqlSource(config, pc.getCountSql()), SqlCommandType.SELECT).build();
         StatementHandler countHandler = config.newStatementHandler(executor, m, param, RowBounds.DEFAULT, null, countBoundSql);
         Statement countStmt = prepareStatement(transaction, countHandler);
@@ -246,5 +248,19 @@ public class PagerInterceptor implements Interceptor, ApplicationListener<Contex
             container.setCountSql(count);
         }
         return afterSql;
+    }
+
+    /**
+     * 复制两个属性到新的BoundSql中，否则对于特殊参数的处理会报错，比如where xx in ()这种的。
+     * 原因是：创建MappedStatement的时候参数全部使用的是StaticSqlSource类型的SqlSource，而真实的情况是不一定全都是StaticSqlSource
+     */
+    private static void copyProps(BoundSql oldBs, BoundSql newBs, Configuration config) {
+        MetaObject oldMo = config.newMetaObject(oldBs);
+        Object ap = oldMo.getValue("additionalParameters");
+        Object mp = oldMo.getValue("metaParameters");
+
+        MetaObject newMo = config.newMetaObject(newBs);
+        newMo.setValue("additionalParameters", ap);
+        newMo.setValue("metaParameters", mp);
     }
 }
