@@ -1,11 +1,12 @@
 package com.github.dreamroute.pager.starter.api;
 
+import com.github.dreamroute.pager.starter.api.PageRequest.Builder;
 import com.github.dreamroute.pager.starter.interceptor.ResultWrapper;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
+import java.util.function.UnaryOperator;
 
 import static java.util.Optional.ofNullable;
 
@@ -26,7 +27,7 @@ public class Pager {
      * @param <R> 分页mapper的返回值类型
      * @return 返回此次查询的分页信息
      */
-    public static <T extends PageRequest, R> PageResponse<R> page(T request, Function<T, List<R>> query) {
+    public static <T extends PageRequest, R> PageResponse<R> query(T request, Function<T, List<R>> query) {
         ResultWrapper<R> resp = (ResultWrapper<R>) query.apply(request);
         PageResponse<R> result = new PageResponse<>();
         List<R> data = new ArrayList<>(ofNullable(resp).orElseGet(ResultWrapper::new));
@@ -35,5 +36,14 @@ public class Pager {
         result.setPageNum(resp.getPageNum());
         result.setPageSize(resp.getPageSize());
         return result;
+    }
+
+    /**
+     * 简单分页，针对那种只有pageNum和pageSize而没有别的参数的查询
+     */
+    public static <T extends PageRequest, R> PageResponse<R> querySimple(UnaryOperator<Builder> request, Function<T, List<R>> query) {
+        Builder builder = new Builder();
+        PageRequest build = request.apply(builder).build();
+        return query((T) build, query);
     }
 }

@@ -20,7 +20,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import javax.sql.DataSource;
 
-import static com.github.dreamroute.pager.starter.api.Pager.page;
+import static com.github.dreamroute.pager.starter.api.Pager.querySimple;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.ninja_squad.dbsetup.Operations.insertInto;
 import static com.ninja_squad.dbsetup.Operations.truncate;
@@ -71,8 +71,11 @@ class UserMapperTest {
         PageRequest request = new PageRequest();
         request.setPageNum(1);
         request.setPageSize(2);
-        PageResponse<User> page = page(request, userMapper::selectPage);
+        PageResponse<User> page = Pager.query(request, userMapper::selectPage);
         System.err.println(page);
+
+        PageResponse<User> page1 = querySimple(req -> req.pageNumAndSize(1, 10), userMapper::selectPage);
+        System.err.println(page1);
     }
 
     @Test
@@ -81,7 +84,7 @@ class UserMapperTest {
         request.setPageNum(1);
         request.setPageSize(2);
         request.setName("w.dehai");
-        PageResponse<User> result = Pager.page(request, userMapper::selectFromOneTable);
+        PageResponse<User> result = Pager.query(request, userMapper::selectFromOneTable);
         System.err.println(result);
     }
 
@@ -93,7 +96,7 @@ class UserMapperTest {
         suc.setPageSize(2);
         suc.setNames(newArrayList("w.dehai", "Dreamroute"));
 
-        PageResponse<User> result = Pager.page(suc, userMapper::selectUseInCondition);
+        PageResponse<User> result = Pager.query(suc, userMapper::selectUseInCondition);
         System.err.println(result);
     }
 
@@ -103,7 +106,7 @@ class UserMapperTest {
         request.setPageNum(1);
         request.setPageSize(2);
         request.setName("~~");
-        PageResponse<User> result = Pager.page(request, userMapper::selectFromOneTable);
+        PageResponse<User> result = Pager.query(request, userMapper::selectFromOneTable);
         System.err.println(result);
     }
 
@@ -114,7 +117,7 @@ class UserMapperTest {
         param.setPageSize(2);
         param.setName("w.dehai");
         param.setUserId(1L);
-        PageResponse<SelectFromTwoTablesResp> result = Pager.page(param, userMapper::selectFromTwoTables);
+        PageResponse<SelectFromTwoTablesResp> result = Pager.query(param, userMapper::selectFromTwoTables);
         System.err.println(result);
     }
 
@@ -126,7 +129,7 @@ class UserMapperTest {
         request.setName("w.dehai");
         request.setUserId(1L);
         request.setCityName("成都");
-        PageResponse<SelectFromThreeTablesResp> result = page(request, userMapper::selectFromThreeTables);
+        PageResponse<SelectFromThreeTablesResp> result = Pager.query(request, userMapper::selectFromThreeTables);
         System.err.println(result);
     }
 
