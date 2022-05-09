@@ -32,9 +32,9 @@
         </dependency>
         -->
         <dependency>
-            <groupId>com.github.dreamroute</groupId>
-            <artifactId>sqlprinter-spring-boot-starter</artifactId>
-            <version>2.1.7-RELEASE</version>
+          <groupId>com.github.dreamroute</groupId>
+          <artifactId>sqlprinter-spring-boot-starter</artifactId>
+          <version>2.2.8-RELEASE</version>
         </dependency>
         <dependency>
             <groupId>com.github.dreamroute</groupId>

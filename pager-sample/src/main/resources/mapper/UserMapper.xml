@@ -8,7 +8,7 @@
     </select>
 
     <select id="selectFromTwoTables" resultMap="twoTablesResultMap">
-        select u.*, a.id aid, a.name aname, a.user_id from smart_user u left join smart_addr a on u.id = a.user_id where u.name = #{name} and a.user_id = #{userId} order by u.id desc, u.name asc
+        select u.*, a.id aid, a.name aname, a.user_id from smart_user u left join smart_addr a on u.id = a.user_id where u.name = #{name} and a.user_id = #{userId} order by u.id desc
     </select>
     <resultMap id="twoTablesResultMap" type="com.github.dreamroute.pager.starter.sample.dto.SelectFromTwoTablesResp">
         <id column="id" property="id" />
@@ -22,7 +22,7 @@
 
     <select id="selectFromThreeTables" resultMap="threeTablesResultMap">
         select u.*, a.id aid, a.name aname, a.user_id, c.id cid, c.name cname, c.addr_id from smart_user u left join smart_addr a on u.id = a.user_id left join smart_city c on a.id = c.addr_id
-        where u.name = #{name} and a.user_id = #{userId} and c.name = #{cityName} order by u.id desc, u.name asc
+        where u.name = #{name} and a.user_id = #{userId} and c.name = #{cityName} order by u.id desc
     </select>
     <resultMap id="threeTablesResultMap" type="com.github.dreamroute.pager.starter.sample.dto.SelectFromThreeTablesResp">
         <id column="id" property="id" />

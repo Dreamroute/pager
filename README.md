@@ -118,6 +118,7 @@
 * 大功告成
 
   > 说明：你无需编写统计SQL语句，也无需关心多表联查数据分页不准确的问题，统统插件帮你完成
+  > 只支持主表排序，禁止子表排序，比如: select * from a left join b on xxx order by a.id, b.id，这里不能有b.id
 
 ### 
 
@@ -165,8 +166,7 @@ FROM
 WHERE
 	u.NAME = #{name} and a.user_id = #{userId} 
 ORDER BY
-	u.id DESC,
-	u.NAME ASC
+	u.id DESC
 ```
 * 被插件拦截，自动插入分页信息之后的SQL：
 ```
@@ -185,8 +185,7 @@ WHERE
 	FROM
 		(
 		SELECT DISTINCT
-			u.id,
-			u.NAME 
+			u.id
 		FROM
 			smart_user u
 			LEFT JOIN smart_addr a ON u.id = a.user_id 
@@ -194,8 +193,7 @@ WHERE
 			u.NAME = ? 
 			AND a.user_id = ? 
 		ORDER BY
-			u.id DESC,
-			u.NAME ASC 
+			u.id DESC
 		LIMIT ?, ? 
 		) u 
 	) 
