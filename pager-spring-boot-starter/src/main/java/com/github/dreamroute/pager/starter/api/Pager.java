@@ -1,12 +1,10 @@
 package com.github.dreamroute.pager.starter.api;
 
-import com.github.dreamroute.pager.starter.api.PageRequest.Builder;
 import com.github.dreamroute.pager.starter.interceptor.ResultWrapper;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
-import java.util.function.UnaryOperator;
 
 import static java.util.Optional.ofNullable;
 
@@ -36,14 +34,5 @@ public class Pager {
         result.setPageNum(resp.getPageNum());
         result.setPageSize(resp.getPageSize());
         return result;
-    }
-
-    /**
-     * 简单分页，针对那种只有pageNum和pageSize而没有别的参数的查询
-     */
-    public static <T extends PageRequest, R> PageResponse<R> querySimple(UnaryOperator<Builder> request, Function<T, List<R>> query) {
-        Builder builder = new Builder();
-        PageRequest build = request.apply(builder).build();
-        return query((T) build, query);
     }
 }

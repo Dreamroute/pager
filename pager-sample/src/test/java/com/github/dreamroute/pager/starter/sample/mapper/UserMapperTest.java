@@ -20,7 +20,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import javax.sql.DataSource;
 
-import static com.github.dreamroute.pager.starter.api.Pager.querySimple;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.ninja_squad.dbsetup.Operations.insertInto;
 import static com.ninja_squad.dbsetup.Operations.truncate;
@@ -73,9 +72,6 @@ class UserMapperTest {
         request.setPageSize(2);
         PageResponse<User> page = Pager.query(request, userMapper::selectPage);
         System.err.println(page);
-
-        PageResponse<User> page1 = querySimple(req -> req.pageNumAndSize(1, 10), userMapper::selectPage);
-        System.err.println(page1);
     }
 
     @Test
