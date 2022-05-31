@@ -232,10 +232,12 @@ public class PagerInterceptor implements Interceptor, ApplicationListener<Contex
                 Set<String> orderbyListStr = orderbyList.stream().map(OrderByElement::getExpression).map(Objects::toString).collect(toSet());
                 orderbyListStr.add(distinctBy);
                 subQueryColumns = String.join(", ", orderbyListStr);
+            } else {
+                subQueryColumns = distinctBy;
             }
 
-
-            String afterFrom = FROM + from + " " + joins + WHERE + where;
+            String wh = StringUtils.isNotBlank(where) ? (WHERE + where) : "";
+            String afterFrom = FROM + from + " " + joins + wh;
             String subQuery = "SELECT DISTINCT " + subQueryColumns + afterFrom;
             String noCondition = "SELECT " + columns + FROM + from + " " + joins + " ";
 

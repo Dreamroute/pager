@@ -129,4 +129,40 @@ class UserMapperTest {
         System.err.println(result);
     }
 
+    /**
+     * 无order by的查询
+     */
+    @Test
+    void withNotOrderByTest() {
+        SelectFromTwoTables param = new SelectFromTwoTables();
+        param.setPageNum(1);
+        param.setPageSize(2);
+        param.setName("w.dehai");
+        param.setUserId(1L);
+        // 多表
+        PageResponse<SelectFromTwoTablesResp> result = Pager.query(param, userMapper::withNotOrderBy);
+        System.err.println(result);
+
+        // 单表
+
+    }
+
+    /**
+     * 无查询条件的查询
+     */
+    @Test
+    void withNoConditionTest() {
+        SelectFromTwoTables param = new SelectFromTwoTables();
+        param.setPageNum(1);
+        param.setPageSize(2);
+
+        // 多表
+        PageResponse<SelectFromTwoTablesResp> result = Pager.query(param, userMapper::withNoCondition);
+        System.err.println(result);
+
+        // 单表
+        PageResponse<User> resp = Pager.query(new PageRequest(1, 3), userMapper::withNoConditionSingleTable);
+        System.err.println(resp);
+    }
+
 }

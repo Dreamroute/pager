@@ -55,4 +55,15 @@
         </where>
     </select>
 
+    <select id="withNotOrderBy" resultMap="twoTablesResultMap">
+        select u.*, a.id aid, a.name aname, a.user_id from smart_user u left join smart_addr a on u.id = a.user_id where u.name = #{name} and a.user_id = #{userId}
+    </select>
+
+    <select id="withNoCondition" resultMap="twoTablesResultMap">
+        select u.*, a.id aid, a.name aname, a.user_id from smart_user u left join smart_addr a on u.id = a.user_id
+    </select>
+
+    <select id="withNoConditionSingleTable" resultType="com.github.dreamroute.pager.starter.sample.entity.User">
+        select * from smart_user
+    </select>
 </mapper>

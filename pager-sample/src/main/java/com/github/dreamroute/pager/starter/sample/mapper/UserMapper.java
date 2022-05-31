@@ -3,6 +3,7 @@ package com.github.dreamroute.pager.starter.sample.mapper;
 import com.github.dreamroute.mybatis.pro.service.mapper.BaseMapper;
 import com.github.dreamroute.pager.starter.anno.Pager;
 import com.github.dreamroute.pager.starter.api.PageRequest;
+import com.github.dreamroute.pager.starter.api.PageResponse;
 import com.github.dreamroute.pager.starter.sample.dto.SelectFromOneTable;
 import com.github.dreamroute.pager.starter.sample.dto.SelectFromThreeTables;
 import com.github.dreamroute.pager.starter.sample.dto.SelectFromThreeTablesResp;
@@ -31,4 +32,13 @@ public interface UserMapper extends BaseMapper<User, Long> {
 
     @Pager
     List<User> selectUseInCondition(SelectUseInCondition request);
+
+    @Pager(distinctBy = "u.id")
+    List<SelectFromTwoTablesResp> withNotOrderBy(SelectFromTwoTables request);
+
+    @Pager(distinctBy = "u.id")
+    List<SelectFromTwoTablesResp> withNoCondition(SelectFromTwoTables request);
+
+    @Pager
+    List<User> withNoConditionSingleTable(PageRequest pageRequest);
 }
