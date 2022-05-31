@@ -4,6 +4,9 @@
 
 * 对于多表查询的支持都不够好，比如一对多分页结果往往会存在分页不准的问题
 * 面对极端情况，比如主表、子表都存在查询条件的场景，市面上的分页插件基本上就无能为力
+* 解决PageHelper的关联查询不准问题：
+  * 分页插件不支持嵌套结果映射
+  * https://github.com/pagehelper/Mybatis-PageHelper/blob/master/wikis/zh/Important.md
 
 #### 开发本插件的目的
 
