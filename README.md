@@ -99,7 +99,7 @@
   > 1、@Pager的属性，distinctBy（默认是"id"），用在多表查询的主表去重，否则1对多，多对多的查询会出现分页不准确问题，一般来说是主表别名+主键字段，如：
   > `select * from user u left join addr a on u.id = a.uid where xxx order by u.id`
   >
-  > 那么@Pager(distinctBy = u.id)
+  > 那么@Pager(distinctBy = "u.id")
   >
   > 2、如果你的系统中的主键都是使用`id`这个名字，那么`单表`可以不用设置
 
