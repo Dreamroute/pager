@@ -1,5 +1,6 @@
 package com.github.dreamroute.pager.starter.api;
 
+import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -27,11 +28,13 @@ public class PageRequest implements Serializable {
      **/
     @Min(1)
     @NotNull
+    @ApiModelProperty("页码")
     private int pageNum;
 
     @Min(1)
     @NotNull
     @Max(Integer.MAX_VALUE)
+    @ApiModelProperty("每页行数")
     private int pageSize;
 
     public static class Builder implements Serializable {
