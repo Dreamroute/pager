@@ -97,12 +97,19 @@
         </dependency>
     </dependencies>
 
-    <distributionManagement>
+    <repositories>
         <repository>
-            <id>ossrh</id>
-            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+            <id>nexus</id>
+            <url>https://maven.aliyun.com/repository/public</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+                <updatePolicy>always</updatePolicy>
+            </snapshots>
         </repository>
-    </distributionManagement>
+    </repositories>
 
     <build>
         <plugins>
