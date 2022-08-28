@@ -66,4 +66,8 @@
     <select id="withNoConditionSingleTable" resultType="com.github.dreamroute.pager.starter.sample.entity.User">
         select * from smart_user
     </select>
+
+    <select id="withParamAnno" resultType="com.github.dreamroute.pager.starter.sample.entity.User">
+        select * from smart_user where id = #{req.id}
+    </select>
 </mapper>

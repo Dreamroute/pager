@@ -3,14 +3,15 @@ package com.github.dreamroute.pager.starter.sample.mapper;
 import com.github.dreamroute.mybatis.pro.service.mapper.BaseMapper;
 import com.github.dreamroute.pager.starter.anno.Pager;
 import com.github.dreamroute.pager.starter.api.PageRequest;
-import com.github.dreamroute.pager.starter.api.PageResponse;
 import com.github.dreamroute.pager.starter.sample.dto.SelectFromOneTable;
 import com.github.dreamroute.pager.starter.sample.dto.SelectFromThreeTables;
 import com.github.dreamroute.pager.starter.sample.dto.SelectFromThreeTablesResp;
 import com.github.dreamroute.pager.starter.sample.dto.SelectFromTwoTables;
 import com.github.dreamroute.pager.starter.sample.dto.SelectFromTwoTablesResp;
 import com.github.dreamroute.pager.starter.sample.dto.SelectUseInCondition;
+import com.github.dreamroute.pager.starter.sample.dto.WithParamAnno;
 import com.github.dreamroute.pager.starter.sample.entity.User;
+import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
 import java.util.List;
@@ -41,4 +42,7 @@ public interface UserMapper extends BaseMapper<User, Long> {
 
     @Pager
     List<User> withNoConditionSingleTable(PageRequest pageRequest);
+
+    @Pager
+    List<User> withParamAnno(@Param("req") WithParamAnno wpa);
 }

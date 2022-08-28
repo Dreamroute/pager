@@ -9,6 +9,7 @@ import com.github.dreamroute.pager.starter.sample.dto.SelectFromThreeTablesResp;
 import com.github.dreamroute.pager.starter.sample.dto.SelectFromTwoTables;
 import com.github.dreamroute.pager.starter.sample.dto.SelectFromTwoTablesResp;
 import com.github.dreamroute.pager.starter.sample.dto.SelectUseInCondition;
+import com.github.dreamroute.pager.starter.sample.dto.WithParamAnno;
 import com.github.dreamroute.pager.starter.sample.entity.User;
 import com.ninja_squad.dbsetup.DbSetup;
 import com.ninja_squad.dbsetup.destination.DataSourceDestination;
@@ -19,6 +20,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import javax.sql.DataSource;
+
+import java.util.List;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static com.ninja_squad.dbsetup.Operations.insertInto;
@@ -163,6 +166,27 @@ class UserMapperTest {
         // 单表
         PageResponse<User> resp = Pager.query(new PageRequest(1, 3), userMapper::withNoConditionSingleTable);
         System.err.println(resp);
+    }
+
+    @Test
+    void withParamAnnoDirectTest() {
+        WithParamAnno param = new WithParamAnno();
+        param.setPageNum(1);
+        param.setPageSize(2);
+        param.setId(1L);
+        List<User> result = userMapper.withParamAnno(param);
+        System.err.println(result);
+    }
+
+    @Test
+    void withParamAnnoTest() {
+        WithParamAnno param = new WithParamAnno();
+        param.setPageNum(1);
+        param.setPageSize(2);
+        param.setId(1L);
+
+        PageResponse<User> result = Pager.query(param, userMapper::withParamAnno);
+        System.err.println(result);
     }
 
 }

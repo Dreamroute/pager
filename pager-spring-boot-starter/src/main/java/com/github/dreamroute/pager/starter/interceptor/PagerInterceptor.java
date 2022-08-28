@@ -11,6 +11,7 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.util.TablesNamesFinder;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.ibatis.binding.MapperMethod.ParamMap;
 import org.apache.ibatis.builder.StaticSqlSource;
 import org.apache.ibatis.cache.CacheKey;
 import org.apache.ibatis.executor.Executor;
@@ -55,10 +56,12 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 /**
- * 分页插件，原理：通过注解标注需要分页的接口方法，拦截该方法，抽取原生sql，然后做3个动作：
- * 1、根据原生sql语句生成一个统计的sql，并且执行查询，获得统计结果；
- * 2、改写原生sql，加上分页参数，执行查询操作，获取查询结果；
- * 3、将上述两个结果封装成分页结果；
+ * 分页插件，原理：通过注解标注需要分页的接口方法，拦截该方法，抽取原生sql，然后做如下几个动作：
+ * <ol>
+ *     <li>根据原生sql语句生成一个统计的sql，并且执行查询，获得统计结果；</li>
+ *     <li>根据上一步结果判断，如果统计不为0，那么改写原生sql，加上分页参数，执行查询操作，获取查询结果；否则无需进行查询直接返回结果</li>
+ *     <li>将上述两个结果封装成分页结果；</li>
+ * </ol>
  *
  * @author w.dehi
  */
@@ -104,10 +107,25 @@ public class PagerInterceptor implements Interceptor, ApplicationListener<Contex
     public Object intercept(Invocation invocation) throws Throwable {
         MappedStatement ms = (MappedStatement) invocation.getArgs()[0];
         Object param = invocation.getArgs()[1];
+        // 如果参数不加@Param，那么这里是单个，如果加了，那么这里是个Map，取其一即可
+        Object objParam = param;
+        String paramAlias = null;
+
+        // 如果是@Param风格，那么需要获取到对象参数以及@Param的value
+        if (param instanceof ParamMap) {
+            IllegalArgumentException ex = new IllegalArgumentException("接口" + ms.getId() + "参数有误, 如果参数使用了@Param注解，那么注解的value不能是param1, param2, ...这种，请修改");
+            ParamMap<?> p = (ParamMap<?>) param;
+            if (p.size() != 2) {
+                throw ex;
+            }
+            objParam = p.values().stream().findAny().orElseThrow(() -> ex);
+            paramAlias = p.keySet().stream().filter(e -> !e.toLowerCase().matches("param\\d+")).findAny().orElseThrow(() -> ex);
+        }
+
         PagerContainer pc = pagerContainer.get(ms.getId());
 
         // 拦截请求的条件：1. @Page标记接口，2.参数是：PageRequest
-        if (pc == null || !(param instanceof PageRequest)) {
+        if (pc == null || !(objParam instanceof PageRequest)) {
             return invocation.proceed();
         }
 
@@ -119,7 +137,7 @@ public class PagerInterceptor implements Interceptor, ApplicationListener<Contex
             pc.setAfterSql(afterSql);
             List<ParameterMapping> beforePmList = boundSql.getParameterMappings();
             pc.setOriginPmList(beforePmList);
-            List<ParameterMapping> afterPmList = parseParameterMappings(config, ms.getId(), beforePmList);
+            List<ParameterMapping> afterPmList = parseParameterMappings(config, ms.getId(), beforePmList, paramAlias);
             pc.setAfterPmList(afterPmList);
             pc.setInit(true);
         }
@@ -143,7 +161,7 @@ public class PagerInterceptor implements Interceptor, ApplicationListener<Contex
         countStmt.close();
 
         // 由于不希望在pageRequest中增加start参数，复用pageNum, limit ?, ?的第一个参数pageNum的值使用start，因此resp的pageNum需要在设置start之前进行设置
-        PageRequest pr = (PageRequest) param;
+        PageRequest pr = (PageRequest) objParam;
         int pageNum = pr.getPageNum();
         int pageSize = pr.getPageSize();
         container.setPageNum(pageNum);
@@ -174,10 +192,18 @@ public class PagerInterceptor implements Interceptor, ApplicationListener<Contex
         return stmt;
     }
 
-    private List<ParameterMapping> parseParameterMappings(Configuration config, String id, List<ParameterMapping> pmList) {
+    private List<ParameterMapping> parseParameterMappings(Configuration config, String id, List<ParameterMapping> pmList, String alias) {
         List<ParameterMapping> result = new ArrayList<>(ofNullable(pmList).orElseGet(ArrayList::new));
-        result.add(new ParameterMapping.Builder(config, "pageNum", int.class).build());
-        result.add(new ParameterMapping.Builder(config, "pageSize", int.class).build());
+
+        String pageNum = "pageNum";
+        String pageSize = "pageSize";
+        if (isNotBlank(alias)) {
+            pageNum = alias + "." + pageNum;
+            pageSize = alias + "." + pageSize;
+        }
+
+        result.add(new ParameterMapping.Builder(config, pageNum, int.class).build());
+        result.add(new ParameterMapping.Builder(config, pageSize, int.class).build());
         // 多表情况下：由于插件改写sql会在sql的末尾增加一次查询条件，所以这里需要在sql末尾再次增加一次查询条件
         if (!pagerContainer.get(id).isSingleTable()) {
             result.addAll(ofNullable(pmList).orElseGet(ArrayList::new));
