@@ -45,4 +45,6 @@ public interface UserMapper extends BaseMapper<User, Long> {
 
     @Pager
     List<User> withParamAnno(@Param("req") WithParamAnno wpa);
+
+    List<User> findByName(String name);
 }

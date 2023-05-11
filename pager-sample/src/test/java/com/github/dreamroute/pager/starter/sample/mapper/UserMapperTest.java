@@ -26,6 +26,7 @@ import java.util.List;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.ninja_squad.dbsetup.Operations.insertInto;
 import static com.ninja_squad.dbsetup.Operations.truncate;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SpringBootTest
 class UserMapperTest {
@@ -188,5 +189,7 @@ class UserMapperTest {
         PageResponse<User> result = Pager.query(param, userMapper::withParamAnno);
         System.err.println(result);
     }
+
+    List<User> findByName(String name);
 
 }
