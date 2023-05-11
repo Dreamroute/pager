@@ -20,9 +20,12 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import javax.sql.DataSource;
 
+import java.util.List;
+
 import static com.google.common.collect.Lists.newArrayList;
 import static com.ninja_squad.dbsetup.Operations.insertInto;
 import static com.ninja_squad.dbsetup.Operations.truncate;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SpringBootTest
 class UserMapperTest {
@@ -163,6 +166,12 @@ class UserMapperTest {
         // 单表
         PageResponse<User> resp = Pager.query(new PageRequest(1, 3), userMapper::withNoConditionSingleTable);
         System.err.println(resp);
+    }
+
+    @Test
+    void findByNameTest() {
+        List<User> users = userMapper.findByName("w.dehai");
+        assertEquals(3, users.size());
     }
 
 }

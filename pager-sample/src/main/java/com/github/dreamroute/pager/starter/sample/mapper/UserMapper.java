@@ -41,4 +41,6 @@ public interface UserMapper extends BaseMapper<User, Long> {
 
     @Pager
     List<User> withNoConditionSingleTable(PageRequest pageRequest);
+
+    List<User> findByName(String name);
 }
