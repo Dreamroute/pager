@@ -190,6 +190,11 @@ class UserMapperTest {
         System.err.println(result);
     }
 
-    List<User> findByName(String name);
+    @Test
+    void findByNameAndAgeTest() {
+        List<User> users = userMapper.findByNameAndPassword("w.dehai", "123456");
+        System.err.println(users);
+    }
+
 
 }

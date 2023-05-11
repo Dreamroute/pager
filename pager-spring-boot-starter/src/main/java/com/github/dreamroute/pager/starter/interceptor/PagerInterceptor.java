@@ -113,8 +113,13 @@ public class PagerInterceptor implements Interceptor, ApplicationListener<Contex
 
         // 如果是@Param风格，那么需要获取到对象参数以及@Param的value
         if (param instanceof ParamMap) {
-            IllegalArgumentException ex = new IllegalArgumentException("接口" + ms.getId() + "参数有误, 如果参数使用了@Param注解，那么注解的value不能是param1, param2, ...这种，请修改");
+            IllegalArgumentException ex = new IllegalArgumentException("接口" + ms.getId() + "参数有误, 分页接口参数必有且仅能有一个，并且是继承了PageRequest的，需要把多个参数封装在一个对象中");
             ParamMap<?> p = (ParamMap<?>) param;
+            // 如果不是分页查询，直接返回，避免其他查询走下方流程
+            boolean pageSelect = p.values().stream().anyMatch(PageRequest.class::isInstance);
+            if (!pageSelect) {
+                return invocation.proceed();
+            }
             if (p.size() != 2) {
                 throw ex;
             }
