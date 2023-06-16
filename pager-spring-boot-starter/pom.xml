@@ -34,6 +34,21 @@
             <artifactId>validation-api</artifactId>
             <version>2.0.1.Final</version>
         </dependency>
+        <dependency>
+            <groupId>com.github.dreamroute</groupId>
+            <artifactId>mybatis-pro-boot-starter</artifactId>
+            <version>${mybatis-pro.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>${lombok.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.swagger</groupId>
+            <artifactId>swagger-annotations</artifactId>
+            <version>1.6.6</version>
+        </dependency>
     </dependencies>
 
     <profiles>
@@ -45,11 +60,11 @@
             <distributionManagement>
                 <repository>
                     <id>nexus</id>
-                    <url>http://nexus.yzw.cn/repository/maven-releases/</url>
+                    <url>${dist.nexus.release}</url>
                 </repository>
                 <snapshotRepository>
                     <id>nexus</id>
-                    <url>http://nexus.yzw.cn/repository/maven-snapshots/</url>
+                    <url>${dist.nexus.snapshot}</url>
                 </snapshotRepository>
             </distributionManagement>
             <build>
@@ -57,6 +72,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-deploy-plugin</artifactId>
+                        <version>${maven-deploy-plugin.version}</version>
                         <configuration>
                             <skip>false</skip>
                         </configuration>
@@ -69,11 +85,11 @@
             <distributionManagement>
                 <repository>
                     <id>oss</id>
-                    <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+                    <url>${dist.oss.release}</url>
                 </repository>
                 <snapshotRepository>
                     <id>oss</id>
-                    <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+                    <url>${dist.oss.snapshot}</url>
                 </snapshotRepository>
             </distributionManagement>
             <build>
@@ -81,7 +97,7 @@
                     <plugin>
                         <groupId>org.sonatype.plugins</groupId>
                         <artifactId>nexus-staging-maven-plugin</artifactId>
-                        <version>1.6.8</version>
+                        <version>${nexus-staging-maven-plugin.version}</version>
                         <extensions>true</extensions>
                         <configuration>
                             <serverId>ossrh</serverId>
@@ -94,4 +110,69 @@
         </profile>
     </profiles>
 
+    <build>
+        <plugins>
+
+            <!-- 源码打包start -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <version>${maven-source-plugin.version}</version>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <phase>none</phase>
+                    </execution>
+                    <execution>
+                        <id>custom-attach-sources</id>
+                        <goals>
+                            <goal>jar-no-fork</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <!-- 源码打包end -->
+
+            <!-- javadoc -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>${maven-javadoc-plugin.version}</version>
+                <configuration>
+                    <encoding>UTF-8</encoding>
+                    <charset>UTF-8</charset>
+                    <docencoding>UTF-8</docencoding>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>attach-javadocs</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                        <configuration>
+                            <additionalOptions>-Xdoclint:none</additionalOptions>
+                            <encoding>UTF-8</encoding>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- gpg签名 -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-gpg-plugin</artifactId>
+                <version>${maven-gpg-plugin.version}</version>
+                <executions>
+                    <execution>
+                        <id>sign-artifacts</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>sign</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+        </plugins>
+    </build>
 </project>
