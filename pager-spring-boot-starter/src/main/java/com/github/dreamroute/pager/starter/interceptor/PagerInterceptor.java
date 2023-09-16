@@ -134,18 +134,14 @@ public class PagerInterceptor implements Interceptor, ApplicationListener<Contex
             return invocation.proceed();
         }
 
-        // 这里即使存在并发写入，也是幂等的，因为不涉及状态的更改
         BoundSql boundSql = ms.getBoundSql(param);
-        if (!pc.isInit()) {
-            String beforeSql = boundSql.getSql();
-            String afterSql = parseSql(beforeSql, ms.getId());
-            pc.setAfterSql(afterSql);
-            List<ParameterMapping> beforePmList = boundSql.getParameterMappings();
-            pc.setOriginPmList(beforePmList);
-            List<ParameterMapping> afterPmList = parseParameterMappings(config, ms.getId(), beforePmList, paramAlias);
-            pc.setAfterPmList(afterPmList);
-            pc.setInit(true);
-        }
+        String beforeSql = boundSql.getSql();
+        String afterSql = parseSql(beforeSql, ms.getId());
+        pc.setAfterSql(afterSql);
+        List<ParameterMapping> beforePmList = boundSql.getParameterMappings();
+        pc.setOriginPmList(beforePmList);
+        List<ParameterMapping> afterPmList = parseParameterMappings(config, ms.getId(), beforePmList, paramAlias);
+        pc.setAfterPmList(afterPmList);
 
         Executor executor = (Executor) (getOriginObj(invocation.getTarget()));
         Transaction transaction = executor.getTransaction();
