@@ -1,0 +1,5 @@
+#! /bin/bash
+
+mvn git-build-hook:install
+mvn formatter:format
+git add .
