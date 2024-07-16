@@ -52,6 +52,8 @@
         <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
         <lombok-maven-plugin.version>1.18.16.0</lombok-maven-plugin.version>
         <nexus-staging-maven-plugin.version>1.6.8</nexus-staging-maven-plugin.version>
+
+        <module.path>${project.basedir}</module.path>
     </properties>
 
     <profiles>

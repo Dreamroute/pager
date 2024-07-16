@@ -18,6 +18,7 @@ class ProxyUtilTest {
 interface Car {
     void drive();
 }
+
 class Audi implements Car {
     @Override
     public void drive() {

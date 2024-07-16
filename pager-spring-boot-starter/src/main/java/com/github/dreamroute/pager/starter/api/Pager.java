@@ -14,7 +14,8 @@ import static java.util.Optional.ofNullable;
  * @author w.dehi
  */
 public class Pager {
-    private Pager() {}
+    private Pager() {
+    }
 
     /**
      * 调用此方法，就能获取到分页信息

@@ -41,31 +41,17 @@ class UserMapperTest {
         new DbSetup(new DataSourceDestination(dataSource), truncate("smart_user")).launch();
         new DbSetup(new DataSourceDestination(dataSource), truncate("smart_addr")).launch();
         new DbSetup(new DataSourceDestination(dataSource), truncate("smart_city")).launch();
-        Insert initUser = insertInto("smart_user")
-                .columns("id", "name")
-                .values(1L, "w.dehai")
-                .values(2L, "Jaedong")
-                .values(3L, "Dreamroute")
-                .values(4L, "w.dehai")
-                .values(5L, "w.dehai")
-                .build();
+        Insert initUser = insertInto("smart_user").columns("id", "name").values(1L, "w.dehai").values(2L, "Jaedong")
+            .values(3L, "Dreamroute").values(4L, "w.dehai").values(5L, "w.dehai").build();
         new DbSetup(new DataSourceDestination(dataSource), initUser).launch();
 
-        Insert initAddr = insertInto("smart_addr")
-                .columns("id", "name", "user_id")
-                .values(1L, "w.dehai", 1L)
-                .values(2L, "Jaedong", 1L)
-                .values(3L, "Jaedong", 4L)
-                .values(4L, "Jaedong", 5L)
-                .values(5L, "Jaedong", 5L)
-                .build();
+        Insert initAddr = insertInto("smart_addr").columns("id", "name", "user_id").values(1L, "w.dehai", 1L)
+            .values(2L, "Jaedong", 1L).values(3L, "Jaedong", 4L).values(4L, "Jaedong", 5L).values(5L, "Jaedong", 5L)
+            .build();
         new DbSetup(new DataSourceDestination(dataSource), initAddr).launch();
 
-        Insert initCity = insertInto("smart_city")
-                .columns("id", "name", "addr_id")
-                .values(1L, "成都", 1L)
-                .values(2L, "北京", 1L)
-                .build();
+        Insert initCity = insertInto("smart_city").columns("id", "name", "addr_id").values(1L, "成都", 1L)
+            .values(2L, "北京", 1L).build();
         new DbSetup(new DataSourceDestination(dataSource), initCity).launch();
     }
 
@@ -195,6 +181,5 @@ class UserMapperTest {
         List<User> users = userMapper.findByNameAndPassword("w.dehai", "123456");
         System.err.println(users);
     }
-
 
 }

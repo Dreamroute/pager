@@ -65,21 +65,22 @@ import static org.apache.commons.lang3.StringUtils.isNotBlank;
  *
  * @author w.dehi
  */
-@Intercepts({
-        @Signature(type = Executor.class, method = "query", args = {MappedStatement.class, Object.class, RowBounds.class, ResultHandler.class}),
-        @Signature(type = Executor.class, method = "query", args = {MappedStatement.class, Object.class, RowBounds.class, ResultHandler.class, CacheKey.class, BoundSql.class})
-})
+@Intercepts({ @Signature(type = Executor.class, method = "query", args = { MappedStatement.class, Object.class,
+                                                                           RowBounds.class, ResultHandler.class }),
+              @Signature(type = Executor.class, method = "query", args = { MappedStatement.class, Object.class,
+                                                                           RowBounds.class, ResultHandler.class,
+                                                                           CacheKey.class, BoundSql.class }) })
 public class PagerInterceptor implements Interceptor, ApplicationListener<ContextRefreshedEvent> {
 
     private final ConcurrentHashMap<String, PagerContainer> pagerContainer = new ConcurrentHashMap<>();
 
     // 单表
-    private static final int SINGLE = 1;
-    private static final String COUNT_NAME = "_$count$_";
-    private static final String WHERE = " WHERE ";
-    private static final String FROM = " FROM ";
+    private static final int                                SINGLE         = 1;
+    private static final String                             COUNT_NAME     = "_$count$_";
+    private static final String                             WHERE          = " WHERE ";
+    private static final String                             FROM           = " FROM ";
 
-    private Configuration config;
+    private Configuration                                   config;
 
     /**
      * Spring启动完毕之后，就将需要分页的Mapper抽取出来，存入缓存
@@ -91,14 +92,15 @@ public class PagerInterceptor implements Interceptor, ApplicationListener<Contex
         if (mappers != null && !mappers.isEmpty()) {
             for (Class<?> mapper : mappers) {
                 String mapperName = mapper.getName();
-                stream(mapper.getDeclaredMethods()).filter(method -> AnnotationUtil.hasAnnotation(method, Pager.class)).forEach(method -> {
-                    PagerContainer container = new PagerContainer();
-                    String dictinctBy = AnnotationUtil.getAnnotationValue(method, Pager.class, "distinctBy");
-                    if (isNotBlank(dictinctBy)) {
-                        container.setDistinctBy(dictinctBy);
-                    }
-                    pagerContainer.put(mapperName + "." + method.getName(), container);
-                });
+                stream(mapper.getDeclaredMethods()).filter(method -> AnnotationUtil.hasAnnotation(method, Pager.class))
+                    .forEach(method -> {
+                        PagerContainer container = new PagerContainer();
+                        String dictinctBy = AnnotationUtil.getAnnotationValue(method, Pager.class, "distinctBy");
+                        if (isNotBlank(dictinctBy)) {
+                            container.setDistinctBy(dictinctBy);
+                        }
+                        pagerContainer.put(mapperName + "." + method.getName(), container);
+                    });
             }
         }
     }
@@ -113,7 +115,8 @@ public class PagerInterceptor implements Interceptor, ApplicationListener<Contex
 
         // 如果是@Param风格，那么需要获取到对象参数以及@Param的value
         if (param instanceof ParamMap) {
-            IllegalArgumentException ex = new IllegalArgumentException("接口" + ms.getId() + "参数有误, 分页接口参数必有且仅能有一个，并且是继承了PageRequest的，需要把多个参数封装在一个对象中");
+            IllegalArgumentException ex = new IllegalArgumentException(
+                "接口" + ms.getId() + "参数有误, 分页接口参数必有且仅能有一个，并且是继承了PageRequest的，需要把多个参数封装在一个对象中");
             ParamMap<?> p = (ParamMap<?>) param;
             // 如果不是分页查询，直接返回，避免其他查询走下方流程
             boolean pageSelect = p.values().stream().anyMatch(PageRequest.class::isInstance);
@@ -124,7 +127,8 @@ public class PagerInterceptor implements Interceptor, ApplicationListener<Contex
                 throw ex;
             }
             objParam = p.values().stream().findAny().orElseThrow(() -> ex);
-            paramAlias = p.keySet().stream().filter(e -> !e.toLowerCase().matches("param\\d+")).findAny().orElseThrow(() -> ex);
+            paramAlias = p.keySet().stream().filter(e -> !e.toLowerCase().matches("param\\d+")).findAny()
+                .orElseThrow(() -> ex);
         }
 
         PagerContainer pc = pagerContainer.get(ms.getId());
@@ -149,8 +153,10 @@ public class PagerInterceptor implements Interceptor, ApplicationListener<Contex
         // 处理统计信息
         BoundSql countBoundSql = new BoundSql(config, pc.getCountSql(), pc.getOriginPmList(), param);
         copyProps(boundSql, countBoundSql, config);
-        MappedStatement m = new Builder(config, "com.[plugin]pager_count._inner_select", new StaticSqlSource(config, pc.getCountSql()), SqlCommandType.SELECT).build();
-        StatementHandler countHandler = config.newStatementHandler(executor, m, param, RowBounds.DEFAULT, null, countBoundSql);
+        MappedStatement m = new Builder(config, "com.[plugin]pager_count._inner_select",
+            new StaticSqlSource(config, pc.getCountSql()), SqlCommandType.SELECT).build();
+        StatementHandler countHandler = config.newStatementHandler(executor, m, param, RowBounds.DEFAULT, null,
+            countBoundSql);
         Statement countStmt = prepareStatement(transaction, countHandler);
         ((PreparedStatement) countStmt).execute();
         ResultSet rs = countStmt.getResultSet();
@@ -173,7 +179,8 @@ public class PagerInterceptor implements Interceptor, ApplicationListener<Contex
         // 处理业务查询
         if (container.getTotal() != 0L) {
             BoundSql bizBoundSql = new BoundSql(config, pc.getAfterSql(), pc.getAfterPmList(), param);
-            StatementHandler bizHandler = config.newStatementHandler(executor, ms, param, RowBounds.DEFAULT, null, bizBoundSql);
+            StatementHandler bizHandler = config.newStatementHandler(executor, ms, param, RowBounds.DEFAULT, null,
+                bizBoundSql);
             Statement bizStmt = prepareStatement(transaction, bizHandler);
             List<Object> data = bizHandler.query(bizStmt, null);
             bizStmt.close();
@@ -193,7 +200,8 @@ public class PagerInterceptor implements Interceptor, ApplicationListener<Contex
         return stmt;
     }
 
-    private List<ParameterMapping> parseParameterMappings(Configuration config, String id, List<ParameterMapping> pmList, String alias) {
+    private List<ParameterMapping> parseParameterMappings(Configuration config, String id,
+                                                          List<ParameterMapping> pmList, String alias) {
         List<ParameterMapping> result = new ArrayList<>(ofNullable(pmList).orElseGet(ArrayList::new));
 
         String pageNum = "pageNum";
@@ -232,7 +240,8 @@ public class PagerInterceptor implements Interceptor, ApplicationListener<Contex
             where = StringUtils.isNotBlank(where) ? (WHERE + where) : "";
             sql = "SELECT " + columns + FROM + from + where;
             container.setCountSql("SELECT COUNT(1) " + COUNT_NAME + " FROM (" + sql + ") _$_t");
-            String orderBy = ofNullable(body.getOrderByElements()).orElseGet(ArrayList::new).stream().map(Objects::toString).collect(joining(", "));
+            String orderBy = ofNullable(body.getOrderByElements()).orElseGet(ArrayList::new).stream()
+                .map(Objects::toString).collect(joining(", "));
             orderBy = StringUtils.isNotBlank(orderBy) ? (" ORDER BY " + orderBy) : "";
             afterSql = sql + orderBy + " LIMIT ?, ?";
             container.setSingleTable(true);
@@ -242,7 +251,8 @@ public class PagerInterceptor implements Interceptor, ApplicationListener<Contex
             String alias = "";
             String distinctBy = container.getDistinctBy();
             if (isEmpty(distinctBy) || Objects.equals(ID, distinctBy)) {
-                throw new PaggerException("多表查询需要设置@Pager的主表distinctBy属性, 设置方式参考插件的文档distinctBy设置方法。sql: " + select.toString());
+                throw new PaggerException(
+                    "多表查询需要设置@Pager的主表distinctBy属性, 设置方式参考插件的文档distinctBy设置方法。sql: " + select.toString());
             }
             if (distinctBy.indexOf('.') != -1) {
                 alias = distinctBy.split("\\.")[0];
@@ -256,7 +266,8 @@ public class PagerInterceptor implements Interceptor, ApplicationListener<Contex
                 orderBy = " ORDER BY " + orderbyList.stream().map(Object::toString).collect(joining(", "));
 
                 // order by列和主表id列重复，需要去重
-                Set<String> orderbyListStr = orderbyList.stream().map(OrderByElement::getExpression).map(Objects::toString).collect(toSet());
+                Set<String> orderbyListStr = orderbyList.stream().map(OrderByElement::getExpression)
+                    .map(Objects::toString).collect(toSet());
                 orderbyListStr.add(distinctBy);
                 subQueryColumns = String.join(", ", orderbyListStr);
             } else {
@@ -268,7 +279,8 @@ public class PagerInterceptor implements Interceptor, ApplicationListener<Contex
             String subQuery = "SELECT DISTINCT " + subQueryColumns + afterFrom;
             String noCondition = "SELECT " + columns + FROM + from + " " + joins + " ";
 
-            String result = noCondition + WHERE + distinctBy + " IN  (SELECT " + distinctBy + " FROM (" + subQuery + orderBy + " LIMIT ?, ?) " + alias + ")";
+            String result = noCondition + WHERE + distinctBy + " IN  (SELECT " + distinctBy + " FROM (" + subQuery
+                            + orderBy + " LIMIT ?, ?) " + alias + ")";
             if (StringUtils.isNoneBlank(where)) {
                 result = result + " AND " + where;
             }

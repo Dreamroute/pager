@@ -16,8 +16,8 @@ class BaseTest {
 
     @Test
     void mm0() throws Exception {
-//        String sql = "SELECT o.*, g.* FROM test_order t LEFT JOIN test_goods tt ON t.id = tt.order_id WHERE t.`code` = '100' AND tt.`name` = '小米11'";
-//        String sql = "select a.id, a.name, b.*, c.id, c.name from a left join b on a.id = b.aid left join c on a.id = c.aid where a.name = 'w.dehai' and b.code = '10'";
+        //        String sql = "SELECT o.*, g.* FROM test_order t LEFT JOIN test_goods tt ON t.id = tt.order_id WHERE t.`code` = '100' AND tt.`name` = '小米11'";
+        //        String sql = "select a.id, a.name, b.*, c.id, c.name from a left join b on a.id = b.aid left join c on a.id = c.aid where a.name = 'w.dehai' and b.code = '10'";
         String sql = "SELECT o.*, g.id gid, g.`name` gname, g.order_id gorder_id FROM test_order o LEFT JOIN test_goods g ON o.id = g.order_id WHERE o.`code` = '100' AND g.order_id = 1";
         Select parse = (Select) CCJSqlParserUtil.parse(sql);
         PlainSelect body = (PlainSelect) parse.getSelectBody();

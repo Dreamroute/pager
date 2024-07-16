@@ -11,12 +11,12 @@ import java.util.List;
 @Data
 public class PagerContainer {
 
-    public static final String ID ="id";
+    public static final String     ID = "id";
 
-    private boolean singleTable;
-    private String distinctBy;
-    private String countSql;
-    private String afterSql;
+    private boolean                singleTable;
+    private String                 distinctBy;
+    private String                 countSql;
+    private String                 afterSql;
     private List<ParameterMapping> originPmList;
     private List<ParameterMapping> afterPmList;
 }

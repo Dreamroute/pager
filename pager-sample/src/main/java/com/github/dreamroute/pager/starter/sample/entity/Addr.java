@@ -10,8 +10,8 @@ import java.util.List;
 @Table("smart_addr")
 public class Addr {
     @Id
-    private Long id;
-    private String name;
-    private Long userId;
+    private Long       id;
+    private String     name;
+    private Long       userId;
     private List<City> cities;
 }

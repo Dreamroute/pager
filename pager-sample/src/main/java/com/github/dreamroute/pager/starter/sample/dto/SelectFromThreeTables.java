@@ -8,6 +8,6 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = true)
 public class SelectFromThreeTables extends PageRequest {
     private String name;
-    private Long userId;
+    private Long   userId;
     private String cityName;
 }

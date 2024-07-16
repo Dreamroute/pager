@@ -30,7 +30,8 @@ import java.lang.reflect.Proxy;
 
 public final class ProxyUtil {
 
-    private ProxyUtil() {} // private constructor
+    private ProxyUtil() {
+    } // private constructor
 
     /**
      * <p>Recursive get the original target object.
@@ -41,7 +42,7 @@ public final class ProxyUtil {
      * @return original target object
      */
     public static <T> T getOriginObj(T target) {
-        if(Proxy.isProxyClass(target.getClass())) {
+        if (Proxy.isProxyClass(target.getClass())) {
             MetaObject mo = SystemMetaObject.forObject(target);
             return (T) getOriginObj(mo.getValue("h.target"));
         }

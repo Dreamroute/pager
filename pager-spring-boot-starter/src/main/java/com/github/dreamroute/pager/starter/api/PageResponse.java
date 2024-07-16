@@ -19,9 +19,9 @@ import java.util.List;
 @NoArgsConstructor
 public class PageResponse<T> implements Serializable {
 
-    private int pageNum;
-    private int pageSize;
-    private long totalNum;
+    private int     pageNum;
+    private int     pageSize;
+    private long    totalNum;
     private List<T> list;
 
 }

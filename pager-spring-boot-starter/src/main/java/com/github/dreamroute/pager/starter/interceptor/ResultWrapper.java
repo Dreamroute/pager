@@ -12,6 +12,6 @@ import java.util.ArrayList;
 @EqualsAndHashCode(callSuper = true)
 public class ResultWrapper<E> extends ArrayList<E> {
     private long total;
-    private int pageNum;
-    private int pageSize;
+    private int  pageNum;
+    private int  pageSize;
 }

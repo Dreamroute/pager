@@ -8,7 +8,7 @@ import lombok.Data;
 @Table("smart_city")
 public class City {
     @Id
-    private Long id;
+    private Long   id;
     private String name;
-    private Long addrId;
+    private Long   addrId;
 }

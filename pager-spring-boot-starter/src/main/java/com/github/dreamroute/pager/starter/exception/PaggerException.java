@@ -6,7 +6,8 @@ package com.github.dreamroute.pager.starter.exception;
  * @author w.dehi
  */
 public class PaggerException extends RuntimeException {
-    public PaggerException() {}
+    public PaggerException() {
+    }
 
     public PaggerException(String message) {
         super(message);
