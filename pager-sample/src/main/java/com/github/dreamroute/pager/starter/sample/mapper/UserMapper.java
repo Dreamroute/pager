@@ -3,6 +3,7 @@ package com.github.dreamroute.pager.starter.sample.mapper;
 import com.github.dreamroute.mybatis.pro.service.mapper.BaseMapper;
 import com.github.dreamroute.pager.starter.anno.Pager;
 import com.github.dreamroute.pager.starter.api.PageRequest;
+import com.github.dreamroute.pager.starter.sample.dto.MultiParamsReq;
 import com.github.dreamroute.pager.starter.sample.dto.SelectFromOneTable;
 import com.github.dreamroute.pager.starter.sample.dto.SelectFromThreeTables;
 import com.github.dreamroute.pager.starter.sample.dto.SelectFromThreeTablesResp;
@@ -47,4 +48,7 @@ public interface UserMapper extends BaseMapper<User, Long> {
     List<User> withParamAnno(@Param("req") WithParamAnno wpa);
 
     List<User> findByNameAndPassword(String name, String password);
+
+    @Pager
+    List<User> multiParams(@Param("req") MultiParamsReq req);
 }

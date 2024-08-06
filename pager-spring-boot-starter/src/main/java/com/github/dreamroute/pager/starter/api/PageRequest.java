@@ -20,8 +20,8 @@ import java.io.Serializable;
 @NoArgsConstructor
 public class PageRequest implements Serializable {
 
-    private static int DEFAULT_PAGE_NUM  = 1;
-    private static int DEFAULT_PAGE_SIZE = 10;
+    private static final int DEFAULT_PAGE_NUM  = 1;
+    private static final int DEFAULT_PAGE_SIZE = 10;
 
     /**
      * 分页信息
@@ -29,13 +29,13 @@ public class PageRequest implements Serializable {
     @Min(1)
     @NotNull
     @ApiModelProperty("页码")
-    private int        pageNum;
+    private int              pageNum           = DEFAULT_PAGE_NUM;
 
     @Min(1)
     @NotNull
     @Max(Integer.MAX_VALUE)
     @ApiModelProperty("每页行数")
-    private int        pageSize;
+    private int              pageSize          = DEFAULT_PAGE_SIZE;
 
     public static class Builder implements Serializable {
         int pageNum  = DEFAULT_PAGE_NUM;

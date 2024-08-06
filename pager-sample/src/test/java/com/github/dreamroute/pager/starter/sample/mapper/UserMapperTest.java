@@ -3,6 +3,7 @@ package com.github.dreamroute.pager.starter.sample.mapper;
 import com.github.dreamroute.pager.starter.api.PageRequest;
 import com.github.dreamroute.pager.starter.api.PageResponse;
 import com.github.dreamroute.pager.starter.api.Pager;
+import com.github.dreamroute.pager.starter.sample.dto.MultiParamsReq;
 import com.github.dreamroute.pager.starter.sample.dto.SelectFromOneTable;
 import com.github.dreamroute.pager.starter.sample.dto.SelectFromThreeTables;
 import com.github.dreamroute.pager.starter.sample.dto.SelectFromThreeTablesResp;
@@ -180,6 +181,15 @@ class UserMapperTest {
     void findByNameAndAgeTest() {
         List<User> users = userMapper.findByNameAndPassword("w.dehai", "123456");
         System.err.println(users);
+    }
+
+    @Test
+    void multiParamsTest() {
+        MultiParamsReq req = new MultiParamsReq();
+        req.setId(1L);
+        req.setName("w.dehai");
+        List<User> result = userMapper.multiParams(req);
+        System.err.println(result);
     }
 
 }

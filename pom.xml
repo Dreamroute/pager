@@ -15,7 +15,7 @@
 
     <properties>
         <!-- 版本信息 -->
-        <revision>2.5.2-RELEASE</revision>
+        <revision>2.5.3-RELEASE</revision>
 
         <!-- 默认仓库地址 -->
         <repository.nexus.url>https://maven.aliyun.com/repository/public</repository.nexus.url>
@@ -263,7 +263,7 @@
                 <version>3.4.1</version>
                 <configuration>
                     <installHooks>
-                        <pre-commit>${module.path}/hooks/pre-commit</pre-commit>
+                        <pre-commit>${project.basedir}/hooks/pre-commit</pre-commit>
                     </installHooks>
                 </configuration>
                 <executions>
@@ -287,54 +287,9 @@
                 <artifactId>formatter-maven-plugin</artifactId>
                 <version>2.11.0</version>
                 <configuration>
-                    <configFile>${module.path}/hooks/AlipayFormatter.xml</configFile>
+                    <!--suppress UnresolvedMavenProperty -->
+                    <configFile>${project.parent.basedir}/hooks/AlipayFormatter.xml</configFile>
                 </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>properties-maven-plugin</artifactId>
-                <version>1.0.0</version>
-                <executions>
-                    <execution>
-                        <phase>initialize</phase>
-                        <goals>
-                            <goal>read-project-properties</goal>
-                        </goals>
-                        <configuration>
-                            <files>
-                                <file>${project.build.directory}/maven.properties</file>
-                            </files>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>exec-maven-plugin</artifactId>
-                <version>3.0.0</version>
-                <executions>
-                    <execution>
-                        <phase>validate</phase>
-                        <goals>
-                            <goal>exec</goal>
-                        </goals>
-                        <configuration>
-                            <executable>sh</executable>
-                            <arguments>
-                                <argument>-c</argument>
-                                <argument>
-                                    <![CDATA[
-                                    if [ -f "${project.basedir}/../pom.xml" ]; then
-                                        echo "module.path=${project.parent.basedir}" >> ${project.build.directory}/maven.properties
-                                    else
-                                        echo "module.path=${project.basedir}" >> ${project.build.directory}/maven.properties
-                                    fi
-                                    ]]>
-                                </argument>
-                            </arguments>
-                        </configuration>
-                    </execution>
-                </executions>
             </plugin>
         </plugins>
     </build>

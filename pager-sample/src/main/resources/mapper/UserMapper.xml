@@ -70,4 +70,8 @@
     <select id="withParamAnno" resultType="com.github.dreamroute.pager.starter.sample.entity.User">
         select * from smart_user where id = #{req.id}
     </select>
+    
+    <select id="multiParams" resultType="com.github.dreamroute.pager.starter.sample.entity.User">
+        select * from smart_user t where t.id = #{req.id} and t.name = #{req.name}
+    </select>
 </mapper>
