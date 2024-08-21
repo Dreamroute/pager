@@ -12,7 +12,6 @@ class ProxyUtilTest {
         Object originObj = ProxyUtil.getOriginObj(plugin);
         System.err.println(originObj);
     }
-
 }
 
 interface Car {
@@ -21,6 +20,5 @@ interface Car {
 
 class Audi implements Car {
     @Override
-    public void drive() {
-    }
+    public void drive() {}
 }

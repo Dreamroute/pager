@@ -12,10 +12,9 @@ import com.github.dreamroute.pager.starter.sample.dto.SelectFromTwoTablesResp;
 import com.github.dreamroute.pager.starter.sample.dto.SelectUseInCondition;
 import com.github.dreamroute.pager.starter.sample.dto.WithParamAnno;
 import com.github.dreamroute.pager.starter.sample.entity.User;
+import java.util.List;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
-
-import java.util.List;
 
 public interface UserMapper extends BaseMapper<User, Long> {
 

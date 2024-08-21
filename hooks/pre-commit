@@ -1,5 +1,5 @@
 #! /bin/bash
 
 mvn git-build-hook:install
-mvn formatter:format
+mvn spotless:apply
 git add .

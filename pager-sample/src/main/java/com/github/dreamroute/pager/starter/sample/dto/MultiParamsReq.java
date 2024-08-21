@@ -7,6 +7,6 @@ import lombok.EqualsAndHashCode;
 @Data
 @EqualsAndHashCode(callSuper = true)
 public class MultiParamsReq extends PageRequest {
-    private Long   id;
+    private Long id;
     private String name;
 }

@@ -4,6 +4,4 @@ import com.github.dreamroute.pager.starter.api.PageRequest;
 import lombok.Data;
 
 @Data
-public class WithNotOrderBy extends PageRequest {
-
-}
+public class WithNotOrderBy extends PageRequest {}

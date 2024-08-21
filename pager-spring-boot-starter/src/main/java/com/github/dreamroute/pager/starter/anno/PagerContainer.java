@@ -1,9 +1,8 @@
 package com.github.dreamroute.pager.starter.anno;
 
+import java.util.List;
 import lombok.Data;
 import org.apache.ibatis.mapping.ParameterMapping;
-
-import java.util.List;
 
 /**
  * 包裹@Pager的属性
@@ -11,12 +10,12 @@ import java.util.List;
 @Data
 public class PagerContainer {
 
-    public static final String     ID = "id";
+    public static final String ID = "id";
 
-    private boolean                singleTable;
-    private String                 distinctBy;
-    private String                 countSql;
-    private String                 afterSql;
+    private boolean singleTable;
+    private String distinctBy;
+    private String countSql;
+    private String afterSql;
     private List<ParameterMapping> originPmList;
     private List<ParameterMapping> afterPmList;
 }

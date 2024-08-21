@@ -1,12 +1,11 @@
 package com.github.dreamroute.pager.starter.api;
 
+import java.io.Serializable;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.io.Serializable;
-import java.util.List;
 
 /**
  * 分页结果
@@ -19,9 +18,8 @@ import java.util.List;
 @NoArgsConstructor
 public class PageResponse<T> implements Serializable {
 
-    private int     pageNum;
-    private int     pageSize;
-    private long    totalNum;
+    private int pageNum;
+    private int pageSize;
+    private long totalNum;
     private List<T> list;
-
 }

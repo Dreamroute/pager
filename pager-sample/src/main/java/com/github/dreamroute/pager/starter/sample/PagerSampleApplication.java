@@ -7,11 +7,10 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @EnableSQLPrinter
 @SpringBootApplication
-@MapperScan(basePackages = { "com.github.dreamroute.pager.starter.sample.mapper" })
+@MapperScan(basePackages = {"com.github.dreamroute.pager.starter.sample.mapper"})
 public class PagerSampleApplication {
 
     public static void main(String[] args) {
         SpringApplication.run(PagerSampleApplication.class, args);
     }
-
 }

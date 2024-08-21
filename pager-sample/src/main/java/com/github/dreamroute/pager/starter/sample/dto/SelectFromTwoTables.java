@@ -8,5 +8,5 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = true)
 public class SelectFromTwoTables extends PageRequest {
     private String name;
-    private Long   userId;
+    private Long userId;
 }

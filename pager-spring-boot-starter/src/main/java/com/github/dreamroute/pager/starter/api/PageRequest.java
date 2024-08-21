@@ -1,14 +1,13 @@
 package com.github.dreamroute.pager.starter.api;
 
 import io.swagger.annotations.ApiModelProperty;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
+import java.io.Serializable;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
-import java.io.Serializable;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * 分页请求
@@ -20,7 +19,7 @@ import java.io.Serializable;
 @NoArgsConstructor
 public class PageRequest implements Serializable {
 
-    private static final int DEFAULT_PAGE_NUM  = 1;
+    private static final int DEFAULT_PAGE_NUM = 1;
     private static final int DEFAULT_PAGE_SIZE = 10;
 
     /**
@@ -29,16 +28,16 @@ public class PageRequest implements Serializable {
     @Min(1)
     @NotNull
     @ApiModelProperty("页码")
-    private int              pageNum           = DEFAULT_PAGE_NUM;
+    private int pageNum = DEFAULT_PAGE_NUM;
 
     @Min(1)
     @NotNull
     @Max(Integer.MAX_VALUE)
     @ApiModelProperty("每页行数")
-    private int              pageSize          = DEFAULT_PAGE_SIZE;
+    private int pageSize = DEFAULT_PAGE_SIZE;
 
     public static class Builder implements Serializable {
-        int pageNum  = DEFAULT_PAGE_NUM;
+        int pageNum = DEFAULT_PAGE_NUM;
         int pageSize = DEFAULT_PAGE_SIZE;
 
         /**
@@ -70,5 +69,4 @@ public class PageRequest implements Serializable {
             return new PageRequest(pageNum, pageSize);
         }
     }
-
 }

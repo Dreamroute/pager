@@ -1,5 +1,9 @@
 package com.github.dreamroute.pager.starter.sample.mapper;
 
+import static com.google.common.collect.Lists.newArrayList;
+import static com.ninja_squad.dbsetup.Operations.insertInto;
+import static com.ninja_squad.dbsetup.Operations.truncate;
+
 import com.github.dreamroute.pager.starter.api.PageRequest;
 import com.github.dreamroute.pager.starter.api.PageResponse;
 import com.github.dreamroute.pager.starter.api.Pager;
@@ -15,25 +19,19 @@ import com.github.dreamroute.pager.starter.sample.entity.User;
 import com.ninja_squad.dbsetup.DbSetup;
 import com.ninja_squad.dbsetup.destination.DataSourceDestination;
 import com.ninja_squad.dbsetup.operation.Insert;
+import java.util.List;
+import javax.sql.DataSource;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-
-import javax.sql.DataSource;
-
-import java.util.List;
-
-import static com.google.common.collect.Lists.newArrayList;
-import static com.ninja_squad.dbsetup.Operations.insertInto;
-import static com.ninja_squad.dbsetup.Operations.truncate;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SpringBootTest
 class UserMapperTest {
 
     @Autowired
     private UserMapper userMapper;
+
     @Autowired
     private DataSource dataSource;
 
@@ -42,17 +40,31 @@ class UserMapperTest {
         new DbSetup(new DataSourceDestination(dataSource), truncate("smart_user")).launch();
         new DbSetup(new DataSourceDestination(dataSource), truncate("smart_addr")).launch();
         new DbSetup(new DataSourceDestination(dataSource), truncate("smart_city")).launch();
-        Insert initUser = insertInto("smart_user").columns("id", "name").values(1L, "w.dehai").values(2L, "Jaedong")
-            .values(3L, "Dreamroute").values(4L, "w.dehai").values(5L, "w.dehai").build();
+        Insert initUser = insertInto("smart_user")
+                .columns("id", "name")
+                .values(1L, "w.dehai")
+                .values(2L, "Jaedong")
+                .values(3L, "Dreamroute")
+                .values(4L, "w.dehai")
+                .values(5L, "w.dehai")
+                .build();
         new DbSetup(new DataSourceDestination(dataSource), initUser).launch();
 
-        Insert initAddr = insertInto("smart_addr").columns("id", "name", "user_id").values(1L, "w.dehai", 1L)
-            .values(2L, "Jaedong", 1L).values(3L, "Jaedong", 4L).values(4L, "Jaedong", 5L).values(5L, "Jaedong", 5L)
-            .build();
+        Insert initAddr = insertInto("smart_addr")
+                .columns("id", "name", "user_id")
+                .values(1L, "w.dehai", 1L)
+                .values(2L, "Jaedong", 1L)
+                .values(3L, "Jaedong", 4L)
+                .values(4L, "Jaedong", 5L)
+                .values(5L, "Jaedong", 5L)
+                .build();
         new DbSetup(new DataSourceDestination(dataSource), initAddr).launch();
 
-        Insert initCity = insertInto("smart_city").columns("id", "name", "addr_id").values(1L, "成都", 1L)
-            .values(2L, "北京", 1L).build();
+        Insert initCity = insertInto("smart_city")
+                .columns("id", "name", "addr_id")
+                .values(1L, "成都", 1L)
+                .values(2L, "北京", 1L)
+                .build();
         new DbSetup(new DataSourceDestination(dataSource), initCity).launch();
     }
 
@@ -191,5 +203,4 @@ class UserMapperTest {
         List<User> result = userMapper.multiParams(req);
         System.err.println(result);
     }
-
 }
