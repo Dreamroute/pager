@@ -10,6 +10,7 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 import cn.hutool.core.annotation.AnnotationUtil;
+import cn.hutool.core.text.CharSequenceUtil;
 import com.github.dreamroute.pager.starter.anno.Pager;
 import com.github.dreamroute.pager.starter.anno.PagerContainer;
 import com.github.dreamroute.pager.starter.api.PageRequest;
@@ -24,6 +25,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import lombok.extern.slf4j.Slf4j;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.select.OrderByElement;
 import net.sf.jsqlparser.statement.select.PlainSelect;
@@ -81,6 +83,7 @@ import org.springframework.util.CollectionUtils;
                 CacheKey.class, BoundSql.class
             })
 })
+@Slf4j
 public class PagerInterceptor implements Interceptor, ApplicationListener<ContextRefreshedEvent> {
 
     private final ConcurrentHashMap<String, PagerContainer> pagerContainer = new ConcurrentHashMap<>();
@@ -245,6 +248,7 @@ public class PagerInterceptor implements Interceptor, ApplicationListener<Contex
         try {
             select = (Select) CCJSqlParserUtil.parse(sql);
         } catch (Exception e) {
+            log.error(CharSequenceUtil.format("异常SQl: {}", sql), e);
             throw new PaggerException("SQL语句异常，你的sql语句是: [" + sql + "]", e);
         }
         List<String> tableList = new TablesNamesFinder().getTableList(select);

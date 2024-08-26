@@ -38,4 +38,25 @@ class BaseTest {
         Select parse = (Select) CCJSqlParserUtil.parse(sql);
         System.err.println("END");
     }
+
+    @Test
+    void errTest() throws Exception {
+        String sql = "select T.id,T.title,T.start_date,T.end_date,T.status,T.sending_time,\n"
+                + "       T.create_name,T.create_time,mss.*,T.dding_status,T.dding_id\n"
+                + "from yzw_sop.mass_sending T join\n"
+                + "     yzw_sop.mass_sending_statistics mss ON T.id = mss.mass_sending_id\n"
+                + "WHERE T.del_flag = 0 AND mss.del_flag = 0\n"
+                + "\n"
+                + "\n"
+                + "\n"
+                + "  AND T.type = ?\n"
+                + "\n"
+                + "\n"
+                + "\n"
+                + "\n"
+                + "\n"
+                + "order by T.id desc";
+        Select parse = (Select) CCJSqlParserUtil.parse(sql);
+        System.err.println("END");
+    }
 }
