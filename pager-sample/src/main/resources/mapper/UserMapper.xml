@@ -74,4 +74,11 @@
     <select id="multiParams" resultType="com.github.dreamroute.pager.starter.sample.entity.User">
         select * from smart_user t where t.id = #{req.id} and t.name = #{req.name}
     </select>
+
+    <select id="inTest" resultType="com.github.dreamroute.pager.starter.sample.entity.User">
+        select * from smart_user t where t.id = #{id} and t.name in
+            <foreach collection="names" item="name" open="(" separator="," close=")">
+                #{name}
+            </foreach>
+    </select>
 </mapper>

@@ -7,6 +7,7 @@ import static com.ninja_squad.dbsetup.Operations.truncate;
 import com.github.dreamroute.pager.starter.api.PageRequest;
 import com.github.dreamroute.pager.starter.api.PageResponse;
 import com.github.dreamroute.pager.starter.api.Pager;
+import com.github.dreamroute.pager.starter.sample.dto.InTest;
 import com.github.dreamroute.pager.starter.sample.dto.MultiParamsReq;
 import com.github.dreamroute.pager.starter.sample.dto.SelectFromOneTable;
 import com.github.dreamroute.pager.starter.sample.dto.SelectFromThreeTables;
@@ -106,6 +107,19 @@ class UserMapperTest {
         request.setPageSize(2);
         request.setName("~~");
         PageResponse<User> result = Pager.query(request, userMapper::selectFromOneTable);
+        System.err.println(result);
+    }
+
+    @Test
+    void inTest() {
+        InTest request = new InTest();
+        request.setPageNum(1);
+        request.setPageSize(2);
+        request.setNames(newArrayList("wangdehai", "Dreamroute"));
+        request.setId(3L);
+        //        List<User> users = userMapper.inTest(request);
+        //        System.err.println(users);
+        PageResponse<User> result = Pager.query(request, userMapper::inTest);
         System.err.println(result);
     }
 

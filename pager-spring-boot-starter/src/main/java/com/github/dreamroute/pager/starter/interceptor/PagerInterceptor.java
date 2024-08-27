@@ -162,7 +162,8 @@ public class PagerInterceptor implements Interceptor, ApplicationListener<Contex
         PagerContainer p = parseSql(beforeSql, ms.getId());
         List<ParameterMapping> beforePmList = boundSql.getParameterMappings();
         p.setOriginPmList(beforePmList);
-        List<ParameterMapping> afterPmList = parseParameterMappings(config, ms.getId(), beforePmList, paramAlias);
+        List<ParameterMapping> afterPmList =
+                parseParameterMappings(config, beforePmList, paramAlias, p.isSingleTable());
         p.setAfterPmList(afterPmList);
 
         Executor executor = (Executor) (getOriginObj(invocation.getTarget()));
@@ -201,6 +202,7 @@ public class PagerInterceptor implements Interceptor, ApplicationListener<Contex
         // 处理业务查询
         if (container.getTotal() != 0L) {
             BoundSql bizBoundSql = new BoundSql(config, p.getAfterSql(), p.getAfterPmList(), param);
+            copyProps(boundSql, bizBoundSql, config);
             StatementHandler bizHandler =
                     config.newStatementHandler(executor, ms, param, RowBounds.DEFAULT, null, bizBoundSql);
             Statement bizStmt = prepareStatement(transaction, bizHandler);
@@ -223,7 +225,7 @@ public class PagerInterceptor implements Interceptor, ApplicationListener<Contex
     }
 
     private List<ParameterMapping> parseParameterMappings(
-            Configuration config, String id, List<ParameterMapping> pmList, String alias) {
+            Configuration config, List<ParameterMapping> pmList, String alias, boolean isSingleTable) {
         List<ParameterMapping> result = new ArrayList<>(ofNullable(pmList).orElseGet(ArrayList::new));
 
         String pageNum = "pageNum";
@@ -236,7 +238,7 @@ public class PagerInterceptor implements Interceptor, ApplicationListener<Contex
         result.add(new ParameterMapping.Builder(config, pageNum, int.class).build());
         result.add(new ParameterMapping.Builder(config, pageSize, int.class).build());
         // 多表情况下：由于插件改写sql会在sql的末尾增加一次查询条件，所以这里需要在sql末尾再次增加一次查询条件
-        if (!pagerContainer.get(id).isSingleTable()) {
+        if (!isSingleTable) {
             result.addAll(ofNullable(pmList).orElseGet(ArrayList::new));
         }
         return result;

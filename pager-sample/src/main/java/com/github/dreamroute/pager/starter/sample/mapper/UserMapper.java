@@ -3,6 +3,7 @@ package com.github.dreamroute.pager.starter.sample.mapper;
 import com.github.dreamroute.mybatis.pro.service.mapper.BaseMapper;
 import com.github.dreamroute.pager.starter.anno.Pager;
 import com.github.dreamroute.pager.starter.api.PageRequest;
+import com.github.dreamroute.pager.starter.sample.dto.InTest;
 import com.github.dreamroute.pager.starter.sample.dto.MultiParamsReq;
 import com.github.dreamroute.pager.starter.sample.dto.SelectFromOneTable;
 import com.github.dreamroute.pager.starter.sample.dto.SelectFromThreeTables;
@@ -20,6 +21,9 @@ public interface UserMapper extends BaseMapper<User, Long> {
 
     @Pager
     List<User> selectFromOneTable(SelectFromOneTable request);
+
+    @Pager
+    List<User> inTest(InTest request);
 
     @Pager(distinctBy = "u.id")
     List<SelectFromTwoTablesResp> selectFromTwoTables(SelectFromTwoTables request);
