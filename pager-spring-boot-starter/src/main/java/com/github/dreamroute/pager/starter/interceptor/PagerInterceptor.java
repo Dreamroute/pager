@@ -10,9 +10,11 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 import cn.hutool.core.annotation.AnnotationUtil;
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.text.CharSequenceUtil;
 import com.github.dreamroute.pager.starter.anno.Pager;
 import com.github.dreamroute.pager.starter.anno.PagerContainer;
+import com.github.dreamroute.pager.starter.anno.PagerContainerBaseInfo;
 import com.github.dreamroute.pager.starter.api.PageRequest;
 import com.github.dreamroute.pager.starter.exception.PaggerException;
 import java.sql.PreparedStatement;
@@ -86,7 +88,7 @@ import org.springframework.util.CollectionUtils;
 @Slf4j
 public class PagerInterceptor implements Interceptor, ApplicationListener<ContextRefreshedEvent> {
 
-    private final ConcurrentHashMap<String, PagerContainer> pagerContainer = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, PagerContainerBaseInfo> pagerContainer = new ConcurrentHashMap<>();
 
     // 单表
     private static final int SINGLE = 1;
@@ -109,7 +111,7 @@ public class PagerInterceptor implements Interceptor, ApplicationListener<Contex
                 stream(mapper.getDeclaredMethods())
                         .filter(method -> AnnotationUtil.hasAnnotation(method, Pager.class))
                         .forEach(method -> {
-                            PagerContainer container = new PagerContainer();
+                            PagerContainerBaseInfo container = new PagerContainerBaseInfo();
                             String dictinctBy = AnnotationUtil.getAnnotationValue(method, Pager.class, "distinctBy");
                             if (isNotBlank(dictinctBy)) {
                                 container.setDistinctBy(dictinctBy);
@@ -148,7 +150,7 @@ public class PagerInterceptor implements Interceptor, ApplicationListener<Contex
                     .orElseThrow(() -> ex);
         }
 
-        PagerContainer pc = pagerContainer.get(ms.getId());
+        PagerContainerBaseInfo pc = pagerContainer.get(ms.getId());
 
         // 拦截请求的条件：1. @Page标记接口，2.参数是：PageRequest
         if (pc == null || !(objParam instanceof PageRequest)) {
@@ -157,23 +159,22 @@ public class PagerInterceptor implements Interceptor, ApplicationListener<Contex
 
         BoundSql boundSql = ms.getBoundSql(param);
         String beforeSql = boundSql.getSql();
-        String afterSql = parseSql(beforeSql, ms.getId());
-        pc.setAfterSql(afterSql);
+        PagerContainer p = parseSql(beforeSql, ms.getId());
         List<ParameterMapping> beforePmList = boundSql.getParameterMappings();
-        pc.setOriginPmList(beforePmList);
+        p.setOriginPmList(beforePmList);
         List<ParameterMapping> afterPmList = parseParameterMappings(config, ms.getId(), beforePmList, paramAlias);
-        pc.setAfterPmList(afterPmList);
+        p.setAfterPmList(afterPmList);
 
         Executor executor = (Executor) (getOriginObj(invocation.getTarget()));
         Transaction transaction = executor.getTransaction();
 
         // 处理统计信息
-        BoundSql countBoundSql = new BoundSql(config, pc.getCountSql(), pc.getOriginPmList(), param);
+        BoundSql countBoundSql = new BoundSql(config, p.getCountSql(), p.getOriginPmList(), param);
         copyProps(boundSql, countBoundSql, config);
         MappedStatement m = new Builder(
                         config,
                         ms.getId() + "(分页统计)",
-                        new StaticSqlSource(config, pc.getCountSql()),
+                        new StaticSqlSource(config, p.getCountSql()),
                         SqlCommandType.SELECT)
                 .build();
         StatementHandler countHandler =
@@ -199,7 +200,7 @@ public class PagerInterceptor implements Interceptor, ApplicationListener<Contex
 
         // 处理业务查询
         if (container.getTotal() != 0L) {
-            BoundSql bizBoundSql = new BoundSql(config, pc.getAfterSql(), pc.getAfterPmList(), param);
+            BoundSql bizBoundSql = new BoundSql(config, p.getAfterSql(), p.getAfterPmList(), param);
             StatementHandler bizHandler =
                     config.newStatementHandler(executor, ms, param, RowBounds.DEFAULT, null, bizBoundSql);
             Statement bizStmt = prepareStatement(transaction, bizHandler);
@@ -241,8 +242,9 @@ public class PagerInterceptor implements Interceptor, ApplicationListener<Contex
         return result;
     }
 
-    private String parseSql(String sql, String id) {
-        PagerContainer container = pagerContainer.get(id);
+    private PagerContainer parseSql(String sql, String id) {
+        PagerContainerBaseInfo container = pagerContainer.get(id);
+        PagerContainer resp = BeanUtil.copyProperties(container, PagerContainer.class);
         Select select;
         String afterSql;
         try {
@@ -261,18 +263,18 @@ public class PagerInterceptor implements Interceptor, ApplicationListener<Contex
         if (tableList != null && tableList.size() == SINGLE) {
             where = StringUtils.isNotBlank(where) ? (WHERE + where) : "";
             sql = "SELECT " + columns + FROM + from + where;
-            container.setCountSql("SELECT COUNT(1) " + COUNT_NAME + " FROM (" + sql + ") _$_t");
+            resp.setCountSql("SELECT COUNT(1) " + COUNT_NAME + " FROM (" + sql + ") _$_t");
             String orderBy = ofNullable(body.getOrderByElements()).orElseGet(ArrayList::new).stream()
                     .map(Objects::toString)
                     .collect(joining(", "));
             orderBy = StringUtils.isNotBlank(orderBy) ? (" ORDER BY " + orderBy) : "";
             afterSql = sql + orderBy + " LIMIT ?, ?";
-            container.setSingleTable(true);
+            resp.setSingleTable(true);
         } else {
             String joins = body.getJoins().stream().map(Object::toString).collect(joining(" "));
 
             String alias = "";
-            String distinctBy = container.getDistinctBy();
+            String distinctBy = resp.getDistinctBy();
             if (isEmpty(distinctBy) || Objects.equals(ID, distinctBy)) {
                 throw new PaggerException(
                         "多表查询需要设置@Pager的主表distinctBy属性, 设置方式参考插件的文档distinctBy设置方法。sql: " + select.toString());
@@ -312,9 +314,10 @@ public class PagerInterceptor implements Interceptor, ApplicationListener<Contex
             }
             afterSql = result + orderBy;
             String count = "SELECT count(DISTINCT " + distinctBy + ") " + COUNT_NAME + afterFrom;
-            container.setCountSql(count);
+            resp.setCountSql(count);
         }
-        return afterSql;
+        resp.setAfterSql(afterSql);
+        return resp;
     }
 
     /**
