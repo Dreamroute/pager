@@ -15,7 +15,7 @@
 
     <properties>
         <!-- 版本信息 -->
-        <revision>2.5.7-RELEASE</revision>
+        <revision>2.5.8-RELEASE</revision>
 
         <!-- 默认仓库地址 -->
         <repository.nexus.url>https://maven.aliyun.com/repository/public</repository.nexus.url>
@@ -183,6 +183,7 @@
             <groupId>com.github.dreamroute</groupId>
             <artifactId>git-hooks-spring-boot-starter</artifactId>
             <version>1.0-RELEASE</version>
+            <optional>true</optional>
         </dependency>
     </dependencies>
 
