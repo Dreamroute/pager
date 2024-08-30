@@ -38,7 +38,7 @@
         <guava.version>31.0.1-jre</guava.version>
         <fastjson.version>1.2.78</fastjson.version>
         <hutool-all.version>5.8.20</hutool-all.version>
-        <mybatis-pro.version>1.7.0</mybatis-pro.version>
+        <mybatis-pro.version>1.7.17</mybatis-pro.version>
         <lombok.version>1.18.26</lombok.version>
 
         <!-- plugin -->

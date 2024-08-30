@@ -171,6 +171,18 @@ WHERE
 ORDER BY
 	u.id DESC
 ```
+* 切记: 多表必须要使用<resultMap>方式处理结果, 利用mybatis自动折叠功能, 例如:
+```xml
+  <resultMap id="twoTablesResultMap" type="com.github.dreamroute.pager.starter.sample.dto.SelectFromTwoTablesResp">
+      <id column="id" property="id" />
+      <result column="name" property="name"/>
+      <collection property="addrs" ofType="com.github.dreamroute.pager.starter.sample.entity.Addr">
+          <id column="aid" property="id"/>
+          <result column="aname" property="name"/>
+          <result column="user_id" property="userId"/>
+      </collection>
+  </resultMap>
+```
 * 被插件拦截，自动插入分页信息之后的SQL：
 ```
 SELECT
