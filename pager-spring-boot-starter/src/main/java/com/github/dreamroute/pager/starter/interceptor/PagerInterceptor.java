@@ -11,7 +11,6 @@ import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 import cn.hutool.core.annotation.AnnotationUtil;
 import cn.hutool.core.bean.BeanUtil;
-import cn.hutool.core.text.CharSequenceUtil;
 import com.github.dreamroute.pager.starter.anno.Pager;
 import com.github.dreamroute.pager.starter.anno.PagerContainer;
 import com.github.dreamroute.pager.starter.anno.PagerContainerBaseInfo;
@@ -249,11 +248,17 @@ public class PagerInterceptor implements Interceptor, ApplicationListener<Contex
         PagerContainer resp = BeanUtil.copyProperties(container, PagerContainer.class);
         Select select;
         String afterSql;
+        Throwable t = null;
         try {
             select = (Select) CCJSqlParserUtil.parse(sql);
         } catch (Exception e) {
-            log.error(CharSequenceUtil.format("异常SQl: {}", sql), e);
+            t = e;
+            log.error("异常SQl: " + sql, e);
             throw new PaggerException("SQL语句异常，你的sql语句是: [" + sql + "]", e);
+        } finally {
+            if (t != null) {
+                log.error("SQL解析错误信息, SQL语句: " + sql + ", id: " + id, t);
+            }
         }
         List<String> tableList = new TablesNamesFinder().getTableList(select);
 
