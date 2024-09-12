@@ -1,5 +1,0 @@
-#! /bin/bash
-
-mvn git-build-hook:install
-mvn spotless:apply
-git add .
