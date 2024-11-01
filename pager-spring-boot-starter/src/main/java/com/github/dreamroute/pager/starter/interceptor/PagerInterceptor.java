@@ -67,24 +67,11 @@ import org.springframework.util.CollectionUtils;
  *
  * @author w.dehi
  */
-@Intercepts({
-    @Signature(
-            type = Executor.class,
-            method = "query",
-            args = {
-                MappedStatement.class, Object.class,
-                RowBounds.class, ResultHandler.class
-            }),
-    @Signature(
-            type = Executor.class,
-            method = "query",
-            args = {
-                MappedStatement.class, Object.class,
-                RowBounds.class, ResultHandler.class,
-                CacheKey.class, BoundSql.class
-            })
-})
 @Slf4j
+@Intercepts({
+    @Signature(type = Executor.class, method = "query", args = {MappedStatement.class, Object.class, RowBounds.class, ResultHandler.class}),
+    @Signature(type = Executor.class, method = "query", args = {MappedStatement.class, Object.class, RowBounds.class, ResultHandler.class, CacheKey.class, BoundSql.class})
+})
 public class PagerInterceptor implements Interceptor, ApplicationListener<ContextRefreshedEvent> {
 
     private final ConcurrentHashMap<String, PagerContainerBaseInfo> pagerContainer = new ConcurrentHashMap<>();
@@ -123,16 +110,16 @@ public class PagerInterceptor implements Interceptor, ApplicationListener<Contex
 
     @Override
     public Object intercept(Invocation invocation) throws Throwable {
-        MappedStatement ms = (MappedStatement) invocation.getArgs()[0];
+
         Object param = invocation.getArgs()[1];
         // 如果参数不加@Param，那么这里是单个，如果加了，那么这里是个Map，取其一即可
         Object objParam = param;
         String paramAlias = null;
 
+        MappedStatement ms = (MappedStatement) invocation.getArgs()[0];
         // 如果是@Param风格，那么需要获取到对象参数以及@Param的value
         if (param instanceof ParamMap) {
-            IllegalArgumentException ex = new IllegalArgumentException(
-                    "接口" + ms.getId() + "参数有误, 分页接口参数必有且仅能有一个，并且是继承了PageRequest的，需要把多个参数封装在一个对象中");
+            IllegalArgumentException ex = new IllegalArgumentException("接口" + ms.getId() + "参数有误, 分页接口参数必有且仅能有一个，并且是继承了PageRequest的，需要把多个参数封装在一个对象中");
             ParamMap<?> p = (ParamMap<?>) param;
             // 如果不是分页查询，直接返回，避免其他查询走下方流程
             boolean pageSelect = p.values().stream().anyMatch(PageRequest.class::isInstance);
