@@ -4,7 +4,7 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.github.dreamroute.pager.starter.sample.mapper.UserMapper">
     <select id="selectFromOneTable" resultType="com.github.dreamroute.pager.starter.sample.entity.User">
-        select * from smart_user where name = #{name} order by id asc, name desc
+        select * from smart_user where name = #{name} order by name desc
     </select>
 
     <select id="selectFromTwoTables" resultMap="twoTablesResultMap">

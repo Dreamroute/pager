@@ -1,37 +1,22 @@
 package com.github.dreamroute.pager.starter.interceptor;
 
-import static com.github.dreamroute.pager.starter.anno.PagerContainer.ID;
-import static com.github.dreamroute.pager.starter.interceptor.ProxyUtil.getOriginObj;
-import static java.util.Arrays.stream;
-import static java.util.Optional.ofNullable;
-import static java.util.stream.Collectors.joining;
-import static java.util.stream.Collectors.toSet;
-import static org.apache.commons.lang3.StringUtils.isEmpty;
-import static org.apache.commons.lang3.StringUtils.isNotBlank;
-
 import cn.hutool.core.annotation.AnnotationUtil;
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.collection.CollUtil;
+import com.alibaba.druid.sql.SQLUtils;
+import com.alibaba.druid.sql.ast.SQLOrderBy;
+import com.alibaba.druid.sql.ast.SQLStatement;
+import com.alibaba.druid.sql.ast.statement.SQLSelectItem;
+import com.alibaba.druid.sql.ast.statement.SQLSelectStatement;
+import com.alibaba.druid.sql.ast.statement.SQLTableSource;
+import com.alibaba.druid.sql.dialect.mysql.ast.statement.MySqlSelectQueryBlock;
+import com.alibaba.druid.sql.dialect.mysql.visitor.MySqlSchemaStatVisitor;
+import com.alibaba.druid.stat.TableStat.Name;
 import com.github.dreamroute.pager.starter.anno.Pager;
 import com.github.dreamroute.pager.starter.anno.PagerContainer;
 import com.github.dreamroute.pager.starter.anno.PagerContainerBaseInfo;
 import com.github.dreamroute.pager.starter.api.PageRequest;
-import com.github.dreamroute.pager.starter.exception.PaggerException;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import lombok.extern.slf4j.Slf4j;
-import net.sf.jsqlparser.parser.CCJSqlParserUtil;
-import net.sf.jsqlparser.statement.select.OrderByElement;
-import net.sf.jsqlparser.statement.select.PlainSelect;
-import net.sf.jsqlparser.statement.select.Select;
-import net.sf.jsqlparser.util.TablesNamesFinder;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.binding.MapperMethod.ParamMap;
 import org.apache.ibatis.builder.StaticSqlSource;
@@ -55,7 +40,23 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.apache.ibatis.transaction.Transaction;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
-import org.springframework.util.CollectionUtils;
+
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
+
+import static com.github.dreamroute.pager.starter.interceptor.ProxyUtil.getOriginObj;
+import static java.util.Arrays.stream;
+import static java.util.Optional.ofNullable;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import static org.apache.commons.lang3.StringUtils.repeat;
 
 /**
  * 分页插件，原理：通过注解标注需要分页的接口方法，拦截该方法，抽取原生sql，然后做如下几个动作：
@@ -79,8 +80,10 @@ public class PagerInterceptor implements Interceptor, ApplicationListener<Contex
     // 单表
     private static final int SINGLE = 1;
     private static final String COUNT_NAME = "_$count$_";
+    private static final String SELECT = "SELECT ";
     private static final String WHERE = " WHERE ";
     private static final String FROM = " FROM ";
+    private static final String DISTINCT = " DISTINCT ";
 
     private Configuration config;
 
@@ -148,8 +151,7 @@ public class PagerInterceptor implements Interceptor, ApplicationListener<Contex
         PagerContainer p = parseSql(beforeSql, ms.getId());
         List<ParameterMapping> beforePmList = boundSql.getParameterMappings();
         p.setOriginPmList(beforePmList);
-        List<ParameterMapping> afterPmList =
-                parseParameterMappings(config, beforePmList, paramAlias, p.isSingleTable());
+        List<ParameterMapping> afterPmList = parseParameterMappings(config, beforePmList, paramAlias, p.isSingleTable());
         p.setAfterPmList(afterPmList);
 
         Executor executor = (Executor) (getOriginObj(invocation.getTarget()));
@@ -158,14 +160,8 @@ public class PagerInterceptor implements Interceptor, ApplicationListener<Contex
         // 处理统计信息
         BoundSql countBoundSql = new BoundSql(config, p.getCountSql(), p.getOriginPmList(), param);
         copyProps(boundSql, countBoundSql, config);
-        MappedStatement m = new Builder(
-                        config,
-                        ms.getId() + "(分页统计)",
-                        new StaticSqlSource(config, p.getCountSql()),
-                        SqlCommandType.SELECT)
-                .build();
-        StatementHandler countHandler =
-                config.newStatementHandler(executor, m, param, RowBounds.DEFAULT, null, countBoundSql);
+        MappedStatement m = new Builder(config, ms.getId() + "(分页统计)", new StaticSqlSource(config, p.getCountSql()), SqlCommandType.SELECT).build();
+        StatementHandler countHandler = config.newStatementHandler(executor, m, param, RowBounds.DEFAULT, null, countBoundSql);
         Statement countStmt = prepareStatement(transaction, countHandler);
         ((PreparedStatement) countStmt).execute();
         ResultSet rs = countStmt.getResultSet();
@@ -189,8 +185,7 @@ public class PagerInterceptor implements Interceptor, ApplicationListener<Contex
         if (container.getTotal() != 0L) {
             BoundSql bizBoundSql = new BoundSql(config, p.getAfterSql(), p.getAfterPmList(), param);
             copyProps(boundSql, bizBoundSql, config);
-            StatementHandler bizHandler =
-                    config.newStatementHandler(executor, ms, param, RowBounds.DEFAULT, null, bizBoundSql);
+            StatementHandler bizHandler = config.newStatementHandler(executor, ms, param, RowBounds.DEFAULT, null, bizBoundSql);
             Statement bizStmt = prepareStatement(transaction, bizHandler);
             List<Object> data = bizHandler.query(bizStmt, null);
             bizStmt.close();
@@ -210,8 +205,7 @@ public class PagerInterceptor implements Interceptor, ApplicationListener<Contex
         return stmt;
     }
 
-    private List<ParameterMapping> parseParameterMappings(
-            Configuration config, List<ParameterMapping> pmList, String alias, boolean isSingleTable) {
+    private List<ParameterMapping> parseParameterMappings(Configuration config, List<ParameterMapping> pmList, String alias, boolean isSingleTable) {
         List<ParameterMapping> result = new ArrayList<>(ofNullable(pmList).orElseGet(ArrayList::new));
 
         String pageNum = "pageNum";
@@ -233,81 +227,57 @@ public class PagerInterceptor implements Interceptor, ApplicationListener<Contex
     private PagerContainer parseSql(String sql, String id) {
         PagerContainerBaseInfo container = pagerContainer.get(id);
         PagerContainer resp = BeanUtil.copyProperties(container, PagerContainer.class);
-        Select select;
         String afterSql;
-        Throwable t = null;
-        try {
-            select = (Select) CCJSqlParserUtil.parse(sql);
-        } catch (Exception e) {
-            t = e;
-            log.error("异常SQl: " + sql, e);
-            throw new PaggerException("SQL语句异常，你的sql语句是: [" + sql + "]", e);
-        } finally {
-            if (t != null) {
-                log.error("SQL解析错误信息, SQL语句: " + sql + ", id: " + id, t);
-            }
+        SQLStatement statement = SQLUtils.parseSingleMysqlStatement(sql);
+
+        MySqlSchemaStatVisitor visitor = new MySqlSchemaStatVisitor();
+        statement.accept(visitor);
+        Set<Name> names = visitor.getTables().keySet();
+        List<String> tableList = names.stream().map(Name::getName).collect(Collectors.toList());
+
+        MySqlSelectQueryBlock q = ((MySqlSelectQueryBlock) (((SQLSelectStatement) statement).getSelect().getQuery()));
+        String colums = q.getSelectList().stream().map(SQLSelectItem::toString).collect(Collectors.joining(","));
+
+        String from = q.getFrom().toString();
+        String where = q.getWhere() != null ? q.getWhere().toString() : "";
+        String wh = StringUtils.isNotBlank(where) ? (WHERE + where) : "";
+        int orderByColums = ofNullable(q.getOrderBy())
+                .map(SQLOrderBy::getItems)
+                .orElseGet(ArrayList::new)
+                .size();
+        if (orderByColums > 1) {
+            throw new IllegalArgumentException("分页插件不支持多个排序字段!");
         }
-        List<String> tableList = new TablesNamesFinder().getTableList(select);
+        String orderBy = q.getOrderBy() != null ? q.getOrderBy().toString() : "";
 
-        PlainSelect body = (PlainSelect) select.getSelectBody();
-        String columns = body.getSelectItems().stream().map(Object::toString).collect(joining(","));
-        String from = body.getFromItem().toString();
-        String where = ofNullable(body.getWhere()).map(Object::toString).orElse("");
-
-        if (tableList != null && tableList.size() == SINGLE) {
-            where = StringUtils.isNotBlank(where) ? (WHERE + where) : "";
-            sql = "SELECT " + columns + FROM + from + where;
-            resp.setCountSql("SELECT COUNT(1) " + COUNT_NAME + " FROM (" + sql + ") _$_t");
-            String orderBy = ofNullable(body.getOrderByElements()).orElseGet(ArrayList::new).stream()
-                    .map(Objects::toString)
-                    .collect(joining(", "));
-            orderBy = StringUtils.isNotBlank(orderBy) ? (" ORDER BY " + orderBy) : "";
-            afterSql = sql + orderBy + " LIMIT ?, ?";
+        if (CollUtil.isNotEmpty(tableList) && tableList.size() == SINGLE) {
+            String countSql = SELECT + "COUNT(*) " + COUNT_NAME + " " + FROM + from + wh;
+            resp.setCountSql(countSql);
+            afterSql = sql + " LIMIT ?, ?";
             resp.setSingleTable(true);
         } else {
-            String joins = body.getJoins().stream().map(Object::toString).collect(joining(" "));
+            String distinctBy = resp.getDistinctBy();
 
             String alias = "";
-            String distinctBy = resp.getDistinctBy();
-            if (isEmpty(distinctBy) || Objects.equals(ID, distinctBy)) {
-                throw new PaggerException(
-                        "多表查询需要设置@Pager的主表distinctBy属性, 设置方式参考插件的文档distinctBy设置方法。sql: " + select.toString());
-            }
+            String masterTableId = "";
+
             if (distinctBy.indexOf('.') != -1) {
                 alias = distinctBy.split("\\.")[0];
+                masterTableId = distinctBy.split("\\.")[1];
             }
 
-            // 如果order by不为空，那么子查询的查询列需要将order by列也带上，否则H2会报错（order by列需要在查询列中），MySQL则不会
-            String orderBy = "";
-            String subQueryColumns = "";
-            List<OrderByElement> orderbyList = body.getOrderByElements();
-            if (!CollectionUtils.isEmpty(orderbyList)) {
-                orderBy = " ORDER BY "
-                        + orderbyList.stream().map(Object::toString).collect(joining(", "));
 
-                // order by列和主表id列重复，需要去重
-                Set<String> orderbyListStr = orderbyList.stream()
-                        .map(OrderByElement::getExpression)
-                        .map(Objects::toString)
-                        .collect(toSet());
-                orderbyListStr.add(distinctBy);
-                subQueryColumns = String.join(", ", orderbyListStr);
-            } else {
-                subQueryColumns = distinctBy;
-            }
+            String subQuery1 = SELECT + DISTINCT + distinctBy + FROM + from + wh + " " + orderBy + " LIMIT ?, ?";
+            String newAlias = "_" + alias;
+            subQuery1 = subQuery1.replaceAll("\\bAS\\s+" + alias + "\\b", "AS " + newAlias)
+                    .replaceAll("\\b" + alias + "\\b", newAlias);
 
-            String wh = StringUtils.isNotBlank(where) ? (WHERE + where) : "";
-            String afterFrom = FROM + from + " " + joins + wh;
-            String subQuery = "SELECT DISTINCT " + subQueryColumns + afterFrom;
-            String noCondition = "SELECT " + columns + FROM + from + " " + joins + " ";
+            String innerAlias = "__" + repeat(alias, 2);
+            String subQuery2 = SELECT + innerAlias + "." + masterTableId + FROM + "(" + subQuery1 + ") " + innerAlias;
+            String andWh = StringUtils.isNotBlank(wh) ? (" AND " + where) : "";
+            afterSql = SELECT + colums + FROM + from + WHERE + distinctBy + " IN (" + subQuery2 + ")" + andWh + " " + orderBy;
 
-            String result = noCondition + WHERE + distinctBy + " IN  (SELECT " + distinctBy + " FROM (" + subQuery
-                    + orderBy + " LIMIT ?, ?) " + alias + ")";
-            if (StringUtils.isNoneBlank(where)) {
-                result = result + " AND " + where;
-            }
-            afterSql = result + orderBy;
-            String count = "SELECT count(DISTINCT " + distinctBy + ") " + COUNT_NAME + afterFrom;
+            String count = SELECT + "count(DISTINCT " + distinctBy + ") " + COUNT_NAME + FROM + from + wh;
             resp.setCountSql(count);
         }
         resp.setAfterSql(afterSql);

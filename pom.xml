@@ -15,7 +15,7 @@
 
     <properties>
         <!-- 版本信息 -->
-        <revision>2.5.9-RELEASE</revision>
+        <revision>2.6.0-RELEASE</revision>
 
         <!-- 默认仓库地址 -->
         <repository.nexus.url>https://maven.aliyun.com/repository/public</repository.nexus.url>
@@ -177,14 +177,6 @@
 
         </dependencies>
     </dependencyManagement>
-
-    <dependencies>
-        <dependency>
-            <groupId>com.github.jsqlparser</groupId>
-            <artifactId>jsqlparser</artifactId>
-            <version>4.6</version>
-        </dependency>
-    </dependencies>
 
     <build>
         <plugins>

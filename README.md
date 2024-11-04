@@ -139,20 +139,17 @@ WHERE
 ```
 * 被插件拦截，自动插入分页信息之后的SQL：
 ```
-SELECT
-	* 
-FROM
-	smart_user 
-WHERE
-	NAME = ? 
-LIMIT ?, ?
+SELECT *
+FROM smart_user
+WHERE name = 'w.dehai'
+ORDER BY name DESC
+LIMIT 0, 2
 ```
 * 被插件拦截，自动生成统计SQL：
 ```
-SELECT
-	COUNT( * ) _$count$_ 
-FROM
-	( SELECT * FROM smart_user WHERE NAME = ? ) _$_t
+SELECT COUNT(*) AS _$count$_
+FROM smart_user
+WHERE name = 'w.dehai'
 ```
 
 #### 多表
@@ -185,49 +182,32 @@ ORDER BY
 ```
 * 被插件拦截，自动插入分页信息之后的SQL：
 ```
-SELECT
-	u.*,
-	a.id aid,
-	a.NAME aname,
-	a.user_id 
-FROM
-	smart_user u
-	LEFT JOIN smart_addr a ON u.id = a.user_id 
-WHERE
-	u.id IN (
-	SELECT
-		u.id 
-	FROM
-		(
-		SELECT DISTINCT
-			u.id
-		FROM
-			smart_user u
-			LEFT JOIN smart_addr a ON u.id = a.user_id 
-		WHERE
-			u.NAME = ? 
-			AND a.user_id = ? 
-		ORDER BY
-			u.id DESC
-		LIMIT ?, ? 
-		) u 
-	) 
-	AND u.NAME = ?
-	AND a.user_id = ? 
-ORDER BY
-	u.id DESC,
-	u.NAME ASC
+SELECT u.*, a.id AS aid, a.name AS aname, a.user_id
+FROM smart_user u
+	LEFT JOIN smart_addr a ON u.id = a.user_id
+WHERE u.id IN (
+		SELECT __uu.id
+		FROM (
+			SELECT DISTINCT _u.id
+			FROM smart_user _u
+				LEFT JOIN smart_addr a ON _u.id = a.user_id
+			WHERE _u.name = 'w.dehai'
+				AND a.user_id = 1
+			ORDER BY _u.id DESC
+			LIMIT 0, 2
+		) __uu
+	)
+	AND u.name = 'w.dehai'
+	AND a.user_id = 1
+ORDER BY u.id DESC
 ```
 * 被插件拦截，自动生成统计SQL：
 ```
-SELECT
-	count( DISTINCT u.id ) __count__ 
-FROM
-	smart_user u
-	LEFT JOIN smart_addr a ON u.id = a.user_id 
-WHERE
-	u.NAME = ? 
-	AND a.user_id = ?
+SELECT count(DISTINCT u.id) AS _$count$_
+FROM smart_user u
+	LEFT JOIN smart_addr a ON u.id = a.user_id
+WHERE u.name = 'w.dehai'
+	AND a.user_id = 1
 ```
 
 #### 若干demo举例
