@@ -185,38 +185,24 @@ ORDER BY
 ```
 * 被插件拦截，自动插入分页信息之后的SQL：
 ```
-SELECT
-	u.*,
-	a.id aid,
-	a.NAME aname,
-	a.user_id 
-FROM
-	smart_user u
-	LEFT JOIN smart_addr a ON u.id = a.user_id 
-WHERE
-	u.id IN (
-	SELECT
-		u.id 
-	FROM
-		(
-		SELECT DISTINCT
-			u.id
-		FROM
-			smart_user u
-			LEFT JOIN smart_addr a ON u.id = a.user_id 
-		WHERE
-			u.NAME = ? 
-			AND a.user_id = ? 
-		ORDER BY
-			u.id DESC
-		LIMIT ?, ? 
-		) u 
-	) 
-	AND u.NAME = ?
-	AND a.user_id = ? 
-ORDER BY
-	u.id DESC,
-	u.NAME ASC
+SELECT u.*,
+       a.id   aid,
+       a.NAME aname,
+       a.user_id
+FROM smart_user u
+         LEFT JOIN smart_addr a ON u.id = a.user_id
+WHERE u.id IN (SELECT u.id
+               FROM (SELECT DISTINCT u.id
+                     FROM smart_user u
+                              LEFT JOIN smart_addr a ON u.id = a.user_id
+                     WHERE u.NAME = ?
+                       AND a.user_id = ?
+                     ORDER BY u.id DESC
+                     LIMIT ?, ?) u)
+  AND u.NAME = ?
+  AND a.user_id = ?
+ORDER BY u.id DESC,
+         u.NAME ASC
 ```
 * 被插件拦截，自动生成统计SQL：
 ```
