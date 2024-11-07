@@ -217,4 +217,10 @@ class UserMapperTest {
         List<User> result = userMapper.multiParams(req);
         System.err.println(result);
     }
+
+    @Test
+    void mnnTest() {
+        List<User> resp = userMapper.foreachTest(newArrayList("w.d", "Dream"));
+        System.err.println(resp);
+    }
 }

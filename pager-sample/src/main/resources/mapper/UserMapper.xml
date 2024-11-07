@@ -4,14 +4,31 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.github.dreamroute.pager.starter.sample.mapper.UserMapper">
     <select id="selectFromOneTable" resultType="com.github.dreamroute.pager.starter.sample.entity.User">
-        select * from smart_user where name = #{name} order by name desc
+        select
+            *
+        from
+            smart_user
+        where name = #{name}
+        order by
+            name desc
     </select>
 
     <select id="selectFromTwoTables" resultMap="twoTablesResultMap">
-        select u.*, a.id aid, a.name aname, a.user_id from smart_user u left join smart_addr a on u.id = a.user_id where u.name = #{name} and a.user_id = #{userId} order by u.id desc
+        select
+            u.*,
+            a.id aid,
+            a.name aname,
+            a.user_id
+        from
+            smart_user u
+                left join smart_addr a on u.id = a.user_id
+        where u.name = #{name}
+            and a.user_id = #{userId}
+        order by
+            u.id desc
     </select>
     <resultMap id="twoTablesResultMap" type="com.github.dreamroute.pager.starter.sample.dto.SelectFromTwoTablesResp">
-        <id column="id" property="id" />
+        <id column="id" property="id"/>
         <result column="name" property="name"/>
         <collection property="addrs" ofType="com.github.dreamroute.pager.starter.sample.entity.Addr">
             <id column="aid" property="id"/>
@@ -21,11 +38,26 @@
     </resultMap>
 
     <select id="selectFromThreeTables" resultMap="threeTablesResultMap">
-        select u.*, a.id aid, a.name aname, a.user_id, c.id cid, c.name cname, c.addr_id from smart_user u left join smart_addr a on u.id = a.user_id left join smart_city c on a.id = c.addr_id
-        where u.name = #{name} and a.user_id = #{userId} and c.name = #{cityName} order by u.id desc
+        select
+            u.*,
+            a.id aid,
+            a.name aname,
+            a.user_id,
+            c.id cid,
+            c.name cname,
+            c.addr_id
+        from
+            smart_user u
+                left join smart_addr a on u.id = a.user_id
+                left join smart_city c on a.id = c.addr_id
+        where u.name = #{name}
+            and a.user_id = #{userId}
+            and c.name = #{cityName}
+        order by
+            u.id desc
     </select>
     <resultMap id="threeTablesResultMap" type="com.github.dreamroute.pager.starter.sample.dto.SelectFromThreeTablesResp">
-        <id column="id" property="id" />
+        <id column="id" property="id"/>
         <result column="name" property="name"/>
         <collection property="addrs" ofType="com.github.dreamroute.pager.starter.sample.entity.Addr">
             <id column="aid" property="id"/>
@@ -46,7 +78,7 @@
         </foreach>
     </select>
 
-    <select id="listUsers" >
+    <select id="listUsers">
         select * from user
         <where>
             <if test="name != null and name != ''">
@@ -56,29 +88,65 @@
     </select>
 
     <select id="withNotOrderBy" resultMap="twoTablesResultMap">
-        select u.*, a.id aid, a.name aname, a.user_id from smart_user u left join smart_addr a on u.id = a.user_id where u.name = #{name} and a.user_id = #{userId}
+        select
+            u.*,
+            a.id aid,
+            a.name aname,
+            a.user_id
+        from
+            smart_user u
+                left join smart_addr a on u.id = a.user_id
+        where u.name = #{name}
+            and a.user_id = #{userId}
     </select>
 
     <select id="withNoCondition" resultMap="twoTablesResultMap">
-        select u.*, a.id aid, a.name aname, a.user_id from smart_user u left join smart_addr a on u.id = a.user_id
+        select
+            u.*,
+            a.id aid,
+            a.name aname,
+            a.user_id
+        from
+            smart_user u
+                left join smart_addr a on u.id = a.user_id
     </select>
 
     <select id="withNoConditionSingleTable" resultType="com.github.dreamroute.pager.starter.sample.entity.User">
-        select * from smart_user
+        select
+            *
+        from
+            smart_user
     </select>
 
     <select id="withParamAnno" resultType="com.github.dreamroute.pager.starter.sample.entity.User">
-        select * from smart_user where id = #{req.id}
+        select
+            *
+        from
+            smart_user
+        where id = #{req.id}
     </select>
-    
+
     <select id="multiParams" resultType="com.github.dreamroute.pager.starter.sample.entity.User">
-        select * from smart_user t where t.id = #{req.id} and t.name = #{req.name}
+        select
+            *
+        from
+            smart_user t
+        where t.id = #{req.id}
+            and t.name = #{req.name}
     </select>
 
     <select id="inTest" resultType="com.github.dreamroute.pager.starter.sample.entity.User">
         select * from smart_user t where t.id = #{id} and t.name in
-            <foreach collection="names" item="name" open="(" separator="," close=")">
-                #{name}
+        <foreach collection="names" item="name" open="(" separator="," close=")">
+            #{name}
+        </foreach>
+    </select>
+    <select id="foreachTest" resultType="com.github.dreamroute.pager.starter.sample.entity.User">
+        select * from smart_user where 1 = 1
+        <if test="names != null and !names.isEmpty()">
+            <foreach collection="names" index="index" item="item" open=" and (" separator="or" close=")">
+                name like concat(#{item}, '%')
             </foreach>
+        </if>
     </select>
 </mapper>
