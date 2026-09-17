@@ -1,0 +1,43 @@
+name: Verify Spring Boot 3 and 4
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    name: ${{ matrix.module }} on JDK 17
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        module: [pager-sample-boot3, pager-sample-boot4]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+      - run: mvn -B -ntp -pl ${{ matrix.module }} -am test
+
+  dependency-boundaries:
+    name: Verify Jakarta dependency boundaries
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+      - run: |
+          set -euo pipefail
+          for module in pager-spring-boot3-starter pager-spring-boot4-starter; do
+            if mvn -q -pl "$module" dependency:tree -Dincludes=javax.validation:validation-api | grep -q 'javax.validation:validation-api'; then
+              echo "$module must not expose javax.validation"
+              exit 1
+            fi
+          done

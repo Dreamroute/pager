@@ -1,0 +1,61 @@
+package com.github.dreamroute.pager.starter.api;
+
+import java.io.Serializable;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+/**
+ * 分页请求
+ *
+ * @author w.dehai
+ */
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class PageRequest implements Serializable {
+
+    private static final int DEFAULT_PAGE_NUM = 1;
+    private static final int DEFAULT_PAGE_SIZE = 10;
+
+    /**
+     * 分页信息
+     **/
+    private int pageNum = DEFAULT_PAGE_NUM;
+
+    private int pageSize = DEFAULT_PAGE_SIZE;
+
+    public static class Builder implements Serializable {
+        int pageNum = DEFAULT_PAGE_NUM;
+        int pageSize = DEFAULT_PAGE_SIZE;
+
+        /**
+         * 设置当前页码
+         */
+        public Builder pageNum(int pageNum) {
+            this.pageNum = pageNum;
+            return this;
+        }
+
+        /**
+         * 设置每页行数
+         */
+        public Builder pageSize(int pageSize) {
+            this.pageSize = pageSize;
+            return this;
+        }
+
+        /**
+         * 同时设置当前页码 以及 每页行数
+         */
+        public Builder pageNumAndSize(int pageNum, int pageSize) {
+            this.pageNum = pageNum;
+            this.pageSize = pageSize;
+            return this;
+        }
+
+        public PageRequest build() {
+            return new PageRequest(pageNum, pageSize);
+        }
+    }
+}

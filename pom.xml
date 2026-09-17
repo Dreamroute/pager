@@ -2,254 +2,69 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <parent>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.3.7.RELEASE</version>
-    </parent>
 
     <groupId>com.github.dreamroute</groupId>
     <artifactId>pager</artifactId>
     <version>${revision}</version>
     <packaging>pom</packaging>
 
+    <name>pager</name>
+    <description>MyBatis pagination support for Spring Boot 3 and 4</description>
+    <url>https://github.com/Dreamroute/pager</url>
+
     <properties>
-        <!-- 版本信息 -->
-        <revision>2.6.8-RELEASE</revision>
-
-        <!-- 默认仓库地址 -->
-        <repository.nexus.url>https://maven.aliyun.com/repository/public</repository.nexus.url>
-        <repository.oss.url>https://maven.aliyun.com/repository/public</repository.oss.url>
-        <dist.nexus.release>http://nexus.yzw.cn/repository/maven-releases</dist.nexus.release>
-        <dist.nexus.snapshot>http://nexus.yzw.cn/repository/maven-snapshots</dist.nexus.snapshot>
-        <dist.oss.release>https://oss.sonatype.org/content/repositories/snapshots</dist.oss.release>
-        <dist.oss.snapshot>https://oss.sonatype.org/content/repositories/snapshots</dist.oss.snapshot>
-
-        <!-- 编码相关 -->
-        <java.version>1.8</java.version>
-        <maven.compiler.encoding>UTF-8</maven.compiler.encoding>
-        <maven.compiler.target>${java.version}</maven.compiler.target>
-        <maven.compiler.source>${java.version}</maven.compiler.source>
-        <maven.compiler.compilerVersion>${java.version}</maven.compiler.compilerVersion>
-        <project.build.sourceEncoding>${maven.compiler.encoding}</project.build.sourceEncoding>
-        <project.reporting.outputEncoding>${project.build.sourceEncoding}</project.reporting.outputEncoding>
-
-        <!-- 第三方工具 -->
-        <guava.version>31.0.1-jre</guava.version>
-        <fastjson.version>1.2.78</fastjson.version>
-        <hutool-all.version>5.8.20</hutool-all.version>
-        <mybatis-pro.version>1.7.17</mybatis-pro.version>
-        <lombok.version>1.18.26</lombok.version>
-
-        <!-- plugin -->
-        <maven-gpg-plugin.version>1.6</maven-gpg-plugin.version>
-        <maven-deploy-plugin.version>3.0.0</maven-deploy-plugin.version>
-        <maven-deploy-plugin.version>2.8.2</maven-deploy-plugin.version>
-        <flatten-maven-plugin.version>1.6.0</flatten-maven-plugin.version>
-        <maven-source-plugin.version>3.2.1</maven-source-plugin.version>
-        <maven-javadoc-plugin.version>3.2.0</maven-javadoc-plugin.version>
-        <maven-surefire-plugin.version>2.22.2</maven-surefire-plugin.version>
-        <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
-        <lombok-maven-plugin.version>1.18.16.0</lombok-maven-plugin.version>
-        <nexus-staging-maven-plugin.version>1.6.8</nexus-staging-maven-plugin.version>
-
-        <module.path>${project.basedir}</module.path>
+        <revision>3.0.0-SNAPSHOT</revision>
+        <pager.boot3.version>3.0.0-SNAPSHOT</pager.boot3.version>
+        <pager.boot4.version>4.0.0-SNAPSHOT</pager.boot4.version>
+        <java.version>17</java.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <maven.compiler.release>${java.version}</maven.compiler.release>
+        <maven.compiler-plugin.version>3.14.1</maven.compiler-plugin.version>
+        <maven-surefire-plugin.version>3.5.3</maven-surefire-plugin.version>
     </properties>
 
-    <profiles>
-        <profile>
-            <id>nexus</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-            <repositories>
-                <repository>
-                    <id>nexus</id>
-                    <url>${repository.nexus.url}</url>
-                    <releases>
-                        <enabled>true</enabled>
-                    </releases>
-                    <snapshots>
-                        <enabled>true</enabled>
-                        <updatePolicy>always</updatePolicy>
-                    </snapshots>
-                </repository>
-            </repositories>
-            <pluginRepositories>
-                <pluginRepository>
-                    <id>nexus</id>
-                    <url>${repository.nexus.url}</url>
-                    <releases>
-                        <enabled>true</enabled>
-                    </releases>
-                    <snapshots>
-                        <enabled>true</enabled>
-                        <updatePolicy>always</updatePolicy>
-                    </snapshots>
-                </pluginRepository>
-            </pluginRepositories>
-            <distributionManagement>
-                <repository>
-                    <id>nexus</id>
-                    <url>${dist.nexus.release}</url>
-                </repository>
-                <snapshotRepository>
-                    <id>nexus</id>
-                    <url>${dist.nexus.snapshot}</url>
-                </snapshotRepository>
-            </distributionManagement>
-        </profile>
-        <profile>
-            <id>oss</id>
-            <repositories>
-                <repository>
-                    <id>nexus</id>
-                    <url>${repository.oss.url}</url>
-                    <releases>
-                        <enabled>true</enabled>
-                    </releases>
-                    <snapshots>
-                        <enabled>true</enabled>
-                        <updatePolicy>always</updatePolicy>
-                    </snapshots>
-                </repository>
-            </repositories>
-            <pluginRepositories>
-                <pluginRepository>
-                    <id>nexus</id>
-                    <url>${repository.oss.url}</url>
-                    <releases>
-                        <enabled>true</enabled>
-                    </releases>
-                    <snapshots>
-                        <enabled>true</enabled>
-                        <updatePolicy>always</updatePolicy>
-                    </snapshots>
-                </pluginRepository>
-            </pluginRepositories>
-            <distributionManagement>
-                <repository>
-                    <id>oss</id>
-                    <url>${dist.oss.release}</url>
-                </repository>
-                <snapshotRepository>
-                    <id>oss</id>
-                    <url>${dist.oss.snapshot}</url>
-                </snapshotRepository>
-            </distributionManagement>
-        </profile>
-    </profiles>
-
-    <dependencyManagement>
-        <dependencies>
-
-            <!-- 基础依赖start -->
-            <dependency>
-                <groupId>com.google.guava</groupId>
-                <artifactId>guava</artifactId>
-                <version>${guava.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>com.alibaba</groupId>
-                <artifactId>fastjson</artifactId>
-                <version>${fastjson.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>cn.hutool</groupId>
-                <artifactId>hutool-all</artifactId>
-                <version>${hutool-all.version}</version>
-            </dependency>
-            <!-- 基础依赖end -->
-
-            <dependency>
-                <groupId>org.projectlombok</groupId>
-                <artifactId>lombok</artifactId>
-                <version>${lombok.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>com.github.dreamroute</groupId>
-                <artifactId>mybatis-pro-base</artifactId>
-                <version>${mybatis-pro.version}</version>
-            </dependency>
-
-        </dependencies>
-    </dependencyManagement>
+    <licenses>
+        <license>
+            <name>MIT</name>
+            <url>https://opensource.org/licenses/MIT</url>
+        </license>
+    </licenses>
+    <developers>
+        <developer>
+            <name>w.dehai</name>
+            <email>342252328@qq.com</email>
+        </developer>
+    </developers>
+    <scm>
+        <url>https://github.com/Dreamroute/pager</url>
+    </scm>
 
     <build>
-        <plugins>
-            <!-- 编译 -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>${maven-compiler-plugin.version}</version>
-            </plugin>
-
-            <!-- 单元测试 -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <version>${maven-surefire-plugin.version}</version>
-                <configuration>
-                    <argLine>-Dfile.encoding=UTF-8</argLine>
-                    <skipTests>true</skipTests>
-                </configuration>
-            </plugin>
-
-            <!-- pom文件 -->
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>flatten-maven-plugin</artifactId>
-                <version>${flatten-maven-plugin.version}</version>
-                <configuration>
-                    <updatePomFile>true</updatePomFile>
-                    <flattenMode>oss</flattenMode>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>flatten</id>
-                        <phase>process-resources</phase>
-                        <goals>
-                            <goal>flatten</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>flatten.clean</id>
-                        <phase>clean</phase>
-                        <goals>
-                            <goal>clean</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-
-            <!-- 默认关闭lombok明细打包 -->
-            <plugin>
-                <groupId>org.projectlombok</groupId>
-                <artifactId>lombok-maven-plugin</artifactId>
-                <version>${lombok-maven-plugin.version}</version>
-                <configuration>
-                    <skip>true</skip>
-                </configuration>
-            </plugin>
-
-            <!-- 默认关闭部署插件 -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-deploy-plugin</artifactId>
-                <version>${maven-deploy-plugin.version}</version>
-                <configuration>
-                    <skip>true</skip>
-                </configuration>
-            </plugin>
-        </plugins>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>${maven.compiler-plugin.version}</version>
+                    <configuration>
+                        <release>${maven.compiler.release}</release>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>${maven-surefire-plugin.version}</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
     </build>
 
     <modules>
-        <module>pager-spring-boot-starter</module>
-        <module>pager-sample</module>
+        <module>pager-core</module>
+        <module>pager-spring-boot3-starter</module>
+        <module>pager-spring-boot4-starter</module>
+        <module>pager-sample-boot3</module>
+        <module>pager-sample-boot4</module>
     </modules>
-
 </project>

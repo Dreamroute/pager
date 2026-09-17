@@ -1,5 +1,56 @@
 # pager
 
+## Spring Boot 兼容性与发布策略
+
+| Spring Boot | JDK | 引入坐标 | 维护方式 |
+| --- | --- | --- | --- |
+| 2.x | 8+ | `pager-spring-boot-starter` | 位于 `release/2.x`，仅安全、兼容性和严重缺陷修复 |
+| 3.2 - 3.5 | 17+ | `pager-spring-boot3-starter` | `main` 主线维护 |
+| 4.1+ | 17+ | `pager-spring-boot4-starter` | `main` 主线维护 |
+
+Boot 2、3、4 使用不同 starter，避免在应用中混入 Spring Framework 5、6、7 的不兼容依赖。`main` 仅构建并发布 Boot 3、4；Boot 2 的存量使用者请固定在 `release/2.x` 分支与 2.x 版本线。
+
+### 引入方式
+
+Spring Boot 3：
+
+```xml
+<dependency>
+    <groupId>com.github.dreamroute</groupId>
+    <artifactId>pager-spring-boot3-starter</artifactId>
+    <version>3.x.y</version>
+</dependency>
+```
+
+Spring Boot 4：
+
+```xml
+<dependency>
+    <groupId>com.github.dreamroute</groupId>
+    <artifactId>pager-spring-boot4-starter</artifactId>
+    <version>4.x.y</version>
+</dependency>
+```
+
+现代 starter 直接使用官方 MyBatis Spring Boot Starter：Boot 3 对应 3.x，Boot 4 对应 4.x；不再传递引入仅支持 Boot 2 的 `mybatis-pro-boot-starter`。
+
+### 从 Boot 2 迁移
+
+1. 将 JDK 升级至 17 以上，并将依赖切换为对应的 Boot 3 或 4 starter。
+2. `PageRequest`、`PageResponse`、`Pager` 与 `@Pager` 的包名和分页行为保持不变。
+3. `PageRequest` 不再携带 `javax.validation` 或 Swagger 1 注解。请在业务请求 DTO 中使用 `jakarta.validation` 和项目选择的 OpenAPI 注解。
+4. 新 starter 通过标准的 `AutoConfiguration.imports` 注册，无需手工注入 `PagerInterceptor`。
+
+### 开发与验证
+
+`main` 使用 JDK 17。运行全部验证：
+
+```bash
+mvn test
+```
+
+其中 `pager-sample-boot3` 和 `pager-sample-boot4` 均使用 H2 验证上下文启动、自动配置、单表分页和关联查询分页。
+
 #### 市面上的mybatis分页插件存在的问题
 
 * 对于多表查询的支持都不够好，比如一对多分页结果往往会存在分页不准的问题
