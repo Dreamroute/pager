@@ -1,0 +1,35 @@
+name: Verify Spring Boot 2 maintenance line
+
+on:
+  push:
+    branches: [release/2.x]
+  pull_request:
+    branches: [release/2.x]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '8'
+          cache: maven
+      - run: mvn -B -ntp test
+
+  dependency-boundary:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '8'
+          cache: maven
+      - run: |
+          set -euo pipefail
+          if mvn -q -pl pager-spring-boot-starter dependency:tree -Dincludes=jakarta.validation:jakarta.validation-api | grep -q 'jakarta.validation:jakarta.validation-api'; then
+            echo 'Spring Boot 2 starter must not expose Jakarta Validation'
+            exit 1
+          fi
