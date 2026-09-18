@@ -5,7 +5,7 @@
     <parent>
         <groupId>com.github.dreamroute</groupId>
         <artifactId>pager</artifactId>
-        <version>3.0.0</version>
+        <version>${revision}</version>
     </parent>
 
     <artifactId>pager-core</artifactId>

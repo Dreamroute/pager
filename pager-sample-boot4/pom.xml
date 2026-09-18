@@ -5,7 +5,7 @@
     <parent>
         <groupId>com.github.dreamroute</groupId>
         <artifactId>pager</artifactId>
-        <version>3.0.0</version>
+        <version>${revision}</version>
     </parent>
 
     <artifactId>pager-sample-boot4</artifactId>
@@ -31,7 +31,7 @@
         <dependency>
             <groupId>com.github.dreamroute</groupId>
             <artifactId>pager-spring-boot4-starter</artifactId>
-            <version>4.0.0</version>
+            <version>${changelist}</version>
         </dependency>
         <dependency>
             <groupId>com.h2database</groupId>

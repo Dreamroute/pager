@@ -5,7 +5,7 @@
 
     <groupId>com.github.dreamroute</groupId>
     <artifactId>pager</artifactId>
-    <version>3.0.0</version>
+    <version>${revision}</version>
     <packaging>pom</packaging>
 
     <name>pager</name>
@@ -13,6 +13,9 @@
     <url>https://github.com/Dreamroute/pager</url>
 
     <properties>
+        <revision>3.0.0-RELEASE</revision>
+        <sha1>3.0.0</sha1>
+        <changelist>4.0.0</changelist>
         <java.version>17</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -59,6 +62,33 @@
                 </plugin>
             </plugins>
         </pluginManagement>
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>flatten-maven-plugin</artifactId>
+                <version>1.8.0</version>
+                <configuration>
+                    <updatePomFile>true</updatePomFile>
+                    <flattenMode>oss</flattenMode>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>flatten</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>flatten</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>flatten.clean</id>
+                        <phase>clean</phase>
+                        <goals>
+                            <goal>clean</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
     </build>
 
     <profiles>

@@ -34,3 +34,8 @@ build/
 /.flattened-pom.xml
 /pager-sample/.flattened-pom.xml
 /pager-spring-boot-starter/.flattened-pom.xml
+/pager-spring-boot4-starter/.flattened-pom.xml
+/pager-spring-boot3-starter/.flattened-pom.xml
+/pager-sample-boot4/.flattened-pom.xml
+/pager-sample-boot3/.flattened-pom.xml
+/pager-core/.flattened-pom.xml
