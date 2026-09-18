@@ -51,6 +51,34 @@ mvn test
 
 其中 `pager-sample-boot3` 和 `pager-sample-boot4` 均使用 H2 验证上下文启动、自动配置、单表分页和关联查询分页。
 
+### 维护者发布到 Maven Central
+
+现代版本仅通过 Central Portal 发布 `pager` 父 POM、`pager-core`、`pager-spring-boot3-starter` 和 `pager-spring-boot4-starter`；两个 sample 模块不会上传。
+
+发布前请确认：
+
+1. 使用 JDK 17；
+2. Central Portal 已验证 `com.github.dreamroute` 命名空间；
+3. 本机 `~/.m2/settings.xml` 的 `central` server 保存 Central Portal user token；
+4. 可使用 GPG 主密钥 `F3389B115F163E5B9E8FF4409AD74F88A8345A5F` 完成签名，且私钥已通过本机 GPG agent 解锁。
+
+执行顺序：
+
+```bash
+# 1. 运行完整测试、生成 sources/javadoc，并验证 GPG 签名
+mvn -Pcentral-release clean verify
+
+# 2. 本地执行完整 deploy 生命周期，但跳过 Central staging 和上传
+mvn -Pcentral-release -DskipPublishing=true clean deploy
+
+# 3. 上传并等待 Central 校验；autoPublish=false，不会自动公开
+mvn -Pcentral-release clean deploy
+```
+
+`central-publishing-maven-plugin` 0.11.0 在 `skipPublishing=true` 时不会生成 Central bundle；该开关用于验证完整构建且保证不发生 staging 或上传。sample 的排除由发布插件配置控制。
+
+第 3 步完成且 Portal 状态为 `VALIDATED` 后，登录 [Central Portal](https://central.sonatype.com/) 检查组件和版本，再手动点击 Publish。Maven Central 中已公开的版本不可覆盖或删除；发现问题时必须发布新的补丁版本。
+
 #### 市面上的mybatis分页插件存在的问题
 
 * 对于多表查询的支持都不够好，比如一对多分页结果往往会存在分页不准的问题
