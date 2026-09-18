@@ -23,27 +23,36 @@
 */
 package com.github.dreamroute.pager.starter.interceptor;
 
+import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Proxy;
 import org.apache.ibatis.reflection.MetaObject;
 import org.apache.ibatis.reflection.SystemMetaObject;
+import org.apache.ibatis.plugin.Plugin;
 
 public final class ProxyUtil {
 
     private ProxyUtil() {} // private constructor
 
     /**
-     * <p>Recursive get the original target object.
-     * <p>If integrate more than a plugin, maybe there are conflict in these plugins, because plugin will proxy the object.<br>
-     * So, here get the orignal target object
+     * <p>Get the original target object from nested MyBatis plugin proxies.</p>
+     *
+     * <p>Other JDK dynamic proxies are returned as-is because their invocation handlers do not
+     * necessarily expose a target object.</p>
      *
      * @param target proxy-object
      * @return original target object
      */
+    @SuppressWarnings("unchecked")
     public static <T> T getOriginObj(T target) {
-        if (Proxy.isProxyClass(target.getClass())) {
-            MetaObject mo = SystemMetaObject.forObject(target);
-            return (T) getOriginObj(mo.getValue("h.target"));
+        Object origin = target;
+        while (origin != null && Proxy.isProxyClass(origin.getClass())) {
+            InvocationHandler handler = Proxy.getInvocationHandler(origin);
+            if (!(handler instanceof Plugin)) {
+                break;
+            }
+            MetaObject metaObject = SystemMetaObject.forObject(handler);
+            origin = metaObject.getValue("target");
         }
-        return target;
+        return (T) origin;
     }
 }

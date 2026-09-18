@@ -39,7 +39,7 @@
         <dependency>
             <groupId>com.github.dreamroute</groupId>
             <artifactId>pager-core</artifactId>
-            <version>3.0.0</version>
+            <version>${revision}</version>
         </dependency>
         <dependency>
             <groupId>org.mybatis.spring.boot</groupId>

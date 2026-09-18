@@ -21,7 +21,7 @@ jobs:
           distribution: temurin
           java-version: '17'
           cache: maven
-      - run: mvn -B -ntp -pl ${{ matrix.module }} -am test
+      - run: mvn -B -ntp -Drevision=3.0.0 -pl ${{ matrix.module }} -am test
 
   dependency-boundaries:
     name: Verify Jakarta dependency boundaries

@@ -9,7 +9,7 @@
     <packaging>pom</packaging>
 
     <name>pager</name>
-    <description>MyBatis pagination support for Spring Boot 3 and 4</description>
+    <description>MyBatis pagination support for Spring Boot 2, 3 and 4</description>
     <url>https://github.com/Dreamroute/pager</url>
 
     <properties>
