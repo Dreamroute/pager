@@ -46,4 +46,26 @@
             <artifactId>spring-boot-autoconfigure</artifactId>
         </dependency>
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.sonatype.central</groupId>
+                <artifactId>central-publishing-maven-plugin</artifactId>
+                <version>0.11.0</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <publishingServerId>central</publishingServerId>
+                    <deploymentName>pager-release</deploymentName>
+                    <autoPublish>false</autoPublish>
+                    <waitUntil>validated</waitUntil>
+                    <failOnBuildFailure>true</failOnBuildFailure>
+                    <excludeArtifacts>
+                        <excludeArtifact>pager-sample-boot3</excludeArtifact>
+                        <excludeArtifact>pager-sample-boot4</excludeArtifact>
+                    </excludeArtifacts>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>
