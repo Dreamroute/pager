@@ -33,7 +33,7 @@
         <dependency>
             <groupId>com.github.dreamroute</groupId>
             <artifactId>pager-spring-boot3-starter</artifactId>
-            <version>${pager.boot3.version}</version>
+            <version>${sha1}</version>
         </dependency>
         <dependency>
             <groupId>com.h2database</groupId>

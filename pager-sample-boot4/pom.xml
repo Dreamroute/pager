@@ -31,7 +31,7 @@
         <dependency>
             <groupId>com.github.dreamroute</groupId>
             <artifactId>pager-spring-boot4-starter</artifactId>
-            <version>${pager.boot4.version}</version>
+            <version>${changelist}</version>
         </dependency>
         <dependency>
             <groupId>com.h2database</groupId>

@@ -13,9 +13,9 @@
     <url>https://github.com/Dreamroute/pager</url>
 
     <properties>
-        <revision>3.0.0-SNAPSHOT</revision>
-        <pager.boot3.version>3.0.0-SNAPSHOT</pager.boot3.version>
-        <pager.boot4.version>4.0.0-SNAPSHOT</pager.boot4.version>
+        <revision>3.0.0-RELEASE</revision>
+        <sha1>3.0.0</sha1>
+        <changelist>4.0.0</changelist>
         <java.version>17</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
