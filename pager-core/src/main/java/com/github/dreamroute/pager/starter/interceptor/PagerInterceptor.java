@@ -162,8 +162,8 @@ public class PagerInterceptor implements Interceptor {
         ResultSet rs = countStmt.getResultSet();
         ResultWrapper<Object> container = new ResultWrapper<>();
         while (rs.next()) {
-            long totle = rs.getLong(COUNT_NAME);
-            container.setTotal(totle);
+            long total = rs.getLong(COUNT_NAME);
+            container.setTotal(total);
         }
         countStmt.close();
 
@@ -231,19 +231,21 @@ public class PagerInterceptor implements Interceptor {
         List<String> tableList = names.stream().map(Name::getName).collect(Collectors.toList());
 
         MySqlSelectQueryBlock q = ((MySqlSelectQueryBlock) (((SQLSelectStatement) statement).getSelect().getQuery()));
-        String colums = q.getSelectList().stream().map(SQLSelectItem::toString).collect(Collectors.joining(","));
+        String columns = q.getSelectList().stream()
+                .map(SQLUtils::toMySqlString)
+                .collect(Collectors.joining(","));
 
-        String from = q.getFrom().toString();
-        String where = q.getWhere() != null ? q.getWhere().toString() : "";
+        String from = SQLUtils.toMySqlString(q.getFrom());
+        String where = q.getWhere() != null ? SQLUtils.toMySqlString(q.getWhere()) : "";
         String wh = StringUtils.isNotBlank(where) ? (WHERE + where) : "";
-        int orderByColums = ofNullable(q.getOrderBy())
+        int orderByColumns = ofNullable(q.getOrderBy())
                 .map(SQLOrderBy::getItems)
                 .orElseGet(ArrayList::new)
                 .size();
-        if (orderByColums > 1) {
+        if (orderByColumns > 1) {
             throw new IllegalArgumentException("分页插件不支持多个排序字段!");
         }
-        String orderBy = q.getOrderBy() != null ? q.getOrderBy().toString() : "";
+        String orderBy = q.getOrderBy() != null ? SQLUtils.toMySqlString(q.getOrderBy()) : "";
 
         if (CollUtil.isNotEmpty(tableList) && tableList.size() == SINGLE) {
             String countSql = SELECT + "COUNT(*) " + COUNT_NAME + " " + FROM + from + wh;
@@ -270,7 +272,7 @@ public class PagerInterceptor implements Interceptor {
             String innerAlias = "__" + repeat(alias, 2);
             String subQuery2 = SELECT + innerAlias + "." + masterTableId + FROM + "(" + subQuery1 + ") " + innerAlias;
             String andWh = StringUtils.isNotBlank(wh) ? (" AND " + where) : "";
-            afterSql = SELECT + colums + FROM + from + WHERE + distinctBy + " IN (" + subQuery2 + ")" + andWh + " " + orderBy;
+            afterSql = SELECT + columns + FROM + from + WHERE + distinctBy + " IN (" + subQuery2 + ")" + andWh + " " + orderBy;
 
             String count = SELECT + "count(DISTINCT " + distinctBy + ") " + COUNT_NAME + FROM + from + wh;
             resp.setCountSql(count);
