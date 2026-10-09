@@ -57,7 +57,7 @@
                 <configuration>
                     <publishingServerId>central</publishingServerId>
                     <deploymentName>pager-release</deploymentName>
-                    <autoPublish>false</autoPublish>
+                    <autoPublish>true</autoPublish>
                     <waitUntil>validated</waitUntil>
                     <failOnBuildFailure>true</failOnBuildFailure>
                     <excludeArtifacts>
